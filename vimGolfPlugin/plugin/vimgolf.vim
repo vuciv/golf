@@ -33,11 +33,5 @@ call s:EnsureDirectories()
 " Command to play today's VimGolf challenge
 command! -nargs=0 VimGolfToday call vimgolf#PlayToday()
 
-" Command to verify solution
-command! -nargs=0 VimGolfVerify call vimgolf#VerifySolution()
-
-" Command to show target text
-command! -nargs=0 VimGolfShowTarget call vimgolf#ShowTargetText()
-
 " Command to copy the shareable summary
 command! -nargs=0 VimGolfShareSummary call vimgolf#CopyShareableSummary() 

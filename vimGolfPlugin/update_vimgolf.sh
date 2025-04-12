@@ -31,6 +31,7 @@ mkdir -p "$VIM_INSTALL_DIR/samples"
 echo "Copying files to Vim plugin directory..."
 cp -f plugin/vimgolf.vim "$VIM_INSTALL_DIR/plugin/"
 cp -f autoload/vimgolf.vim "$VIM_INSTALL_DIR/autoload/"
+cp -f autoload/vimgolf_api.vim "$VIM_INSTALL_DIR/autoload/"
 cp -f doc/vimgolf.txt "$VIM_INSTALL_DIR/doc/"
 cp -f README.md CONTRIBUTING.md "$VIM_INSTALL_DIR/"
 cp -f samples/* "$VIM_INSTALL_DIR/samples/" 2>/dev/null || true
@@ -53,6 +54,7 @@ if [ ! -L "$NVIM_INSTALL_DIR" ]; then
     # Copy files to Neovim directory
     cp -f plugin/vimgolf.vim "$NVIM_INSTALL_DIR/plugin/"
     cp -f autoload/vimgolf.vim "$NVIM_INSTALL_DIR/autoload/"
+    cp -f autoload/vimgolf_api.vim "$NVIM_INSTALL_DIR/autoload/"
     cp -f doc/vimgolf.txt "$NVIM_INSTALL_DIR/doc/"
     cp -f README.md CONTRIBUTING.md "$NVIM_INSTALL_DIR/"
     cp -f samples/* "$NVIM_INSTALL_DIR/samples/" 2>/dev/null || true

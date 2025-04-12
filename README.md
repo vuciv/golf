@@ -1,27 +1,45 @@
-# VimGolf Server
+# VimGolf
 
-API server for VimGolf challenges, providing endpoints for daily challenges, challenge management, and solution submissions.
+A Vim plugin and server implementation for practicing and improving your Vim skills through coding challenges.
 
-## Features
+## Project Structure
 
-- Daily challenges with automatic rotation
-- Challenge creation and retrieval
-- Solution submission and tracking
-- Leaderboard functionality
-- MongoDB integration for data persistence
+This repository consists of two main components:
 
-## Prerequisites
+- `vimGolfPlugin/`: A Vim plugin for interacting with VimGolf challenges directly from your editor
+- `server/`: A Node.js server implementation for hosting and managing VimGolf challenges
 
-- Node.js (v14 or higher)
-- MongoDB (v4.4 or higher)
-- npm or yarn
+## What is VimGolf?
 
-## Installation
+VimGolf is a game where you compete to solve text manipulation challenges in the fewest keystrokes possible using Vim. Each challenge presents you with a starting text and a target text - your goal is to transform the start text into the target text using as few keystrokes as possible.
 
-1. Clone the repository:
+## Getting Started
+
+### Prerequisites
+
+- Vim 8.0 or higher
+- Node.js (v14 or higher) for running the server
+- MongoDB (v4.4 or higher) for the server
+
+### Plugin Installation
+
+1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/vimgolf-server.git
-cd vimgolf-server
+git clone https://github.com/vuciv/vimGolf.git
+```
+
+2. Copy or symlink the plugin files to your Vim plugin directory:
+```bash
+cp -r vimGolfPlugin/* ~/.vim/plugin/
+# or for Neovim
+cp -r vimGolfPlugin/* ~/.config/nvim/plugin/
+```
+
+### Server Setup
+
+1. Navigate to the server directory:
+```bash
+cd server
 ```
 
 2. Install dependencies:
@@ -29,91 +47,32 @@ cd vimgolf-server
 npm install
 ```
 
-3. Create a `.env` file in the root directory with your configuration:
+3. Create a `.env` file with your configuration:
 ```env
 PORT=3000
 MONGODB_URI=mongodb://localhost/vimgolf
 NODE_ENV=development
 ```
 
-4. Start MongoDB if not already running:
-```bash
-mongod
-```
-
-5. Start the server:
+4. Start the server:
 ```bash
 npm run dev  # for development
 npm start    # for production
 ```
 
-## API Endpoints
+## Usage
 
-### Challenges
-
-- `GET /v1/challenges/daily` - Get today's challenge
-- `GET /v1/challenges/:id` - Get a specific challenge
-- `POST /v1/challenges` - Create a new challenge
-
-### Solutions
-
-- `POST /v1/solutions` - Submit a solution
-- `GET /v1/solutions/leaderboard/:challenge_id` - Get challenge leaderboard
-
-## Development
-
-Run the development server with hot reload:
-```bash
-npm run dev
-```
-
-Run tests:
-```bash
-npm test
-```
-
-## Challenge Format
-
-Challenges should be submitted in the following format:
-
-```json
-{
-  "title": "Challenge Title",
-  "start_text": "Initial text content",
-  "end_text": "Target text content",
-  "par": 20,
-  "difficulty": "medium",
-  "description": "Challenge description"
-}
-```
-
-## Solution Format
-
-Solutions should be submitted in the following format:
-
-```json
-{
-  "challenge_id": "challenge_object_id",
-  "keystrokes": 25,
-  "keylog": [
-    {
-      "key": "i",
-      "timestamp": "2023-12-20T10:30:00Z"
-    }
-  ],
-  "time_taken": 60,
-  "score": -1,
-  "user_id": "user_identifier"
-}
-```
+[Coming soon - Add usage instructions for both the plugin and server]
 
 ## Contributing
 
+Contributions are welcome! Please feel free to submit a Pull Request.
+
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 

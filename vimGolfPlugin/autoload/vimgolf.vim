@@ -11,6 +11,102 @@ let s:vimgolf_par = 0
 let s:vimgolf_challenge_id = ''
 let s:vimgolf_challenge_name = ''
 
+" Show success message and score
+function! vimgolf#ShowSuccess()
+  let b:vimgolf_success_shown = 1
+  
+  " Count keystrokes (ignoring tracking events)
+  let l:keystroke_count = 0
+  for keystroke in s:vimgolf_keystrokes
+    if keystroke.key != 'START' && keystroke.key != 'END' &&
+         \ keystroke.key != 'InsertEnter' && keystroke.key != 'InsertLeave' &&
+         \ keystroke.key != 'CmdlineEnter' && keystroke.key != 'CmdlineLeave' &&
+         \ !matchstr(keystroke.key, '<.\+>') " Ignore special keys
+        let l:keystroke_count += 1
+    endif
+  endfor
+
+  " Calculate score
+  let l:score = vimgolf#CalculateScore(l:keystroke_count)
+  
+  " Calculate time taken
+  let l:time_taken = localtime() - s:vimgolf_start_time
+  let l:minutes = l:time_taken / 60
+  let l:seconds = l:time_taken % 60
+  
+  " Get emoji based on score
+  let l:emoji = '⛳'  " Default par emoji
+  if l:score.value <= -2
+    let l:emoji = '🦅'  " Eagle
+  elseif l:score.value == -1
+    let l:emoji = '🐦'  " Birdie
+  elseif l:score.value >= 3
+    let l:emoji = '😖'  " Triple bogey or worse
+  elseif l:score.value >= 2
+    let l:emoji = '😕'  " Double bogey
+  endif
+
+  " Hide all windows and create a new full-screen buffer
+  only
+  enew
+  
+  " Set buffer options
+  setlocal buftype=nofile
+  setlocal bufhidden=wipe
+  setlocal noswapfile
+  setlocal nonumber
+  setlocal norelativenumber
+  setlocal signcolumn=no
+  setlocal nocursorline
+  setlocal nocursorcolumn
+  
+  " Create the success message
+  let l:lines = []
+  " Add empty lines for vertical centering
+  let l:screen_lines = &lines
+  let l:message_lines = 12  " Number of lines in our message
+  let l:padding = (l:screen_lines - l:message_lines) / 2
+  for i in range(l:padding)
+    call add(l:lines, '')
+  endfor
+  
+  call add(l:lines, '╔═══════════════════════════════════════════════════════════════╗')
+  call add(l:lines, '║                   🎉  CHALLENGE COMPLETE!  🎉                  ║')
+  call add(l:lines, '╠═══════════════════════════════════════════════════════════════╣')
+  call add(l:lines, '║  Challenge: ' . s:vimgolf_challenge_name)
+  call add(l:lines, '║')
+  call add(l:lines, printf('║  Keystrokes: %d  |  Par: %d  |  Score: %s %s', l:keystroke_count, s:vimgolf_par, l:score.name, l:emoji))
+  call add(l:lines, printf('║  Time: %d minutes %d seconds', l:minutes, l:seconds))
+  call add(l:lines, '║')
+  call add(l:lines, '║  Great job! Your solution matches the target perfectly! 🎯')
+  call add(l:lines, '╚═══════════════════════════════════════════════════════════════╝')
+  
+  " Set the content
+  call setline(1, l:lines)
+  
+  " Apply syntax highlighting
+  syntax match VimGolfSuccessHeader /^║.*CHALLENGE COMPLETE.*║$/
+  syntax match VimGolfSuccessStats /^║\s\+Keystrokes.*║$/
+  syntax match VimGolfSuccessTime /^║\s\+Time.*║$/
+  syntax match VimGolfSuccessBorder /[║╔╗╚╝╠╣═]/
+  
+  highlight VimGolfSuccessHeader ctermfg=yellow guifg=#FFD700
+  highlight VimGolfSuccessStats ctermfg=cyan guifg=#00FFFF
+  highlight VimGolfSuccessTime ctermfg=green guifg=#00FF00
+  highlight VimGolfSuccessBorder ctermfg=white guifg=#FFFFFF
+  
+  " Make buffer read-only and move cursor to top
+  setlocal readonly
+  setlocal nomodifiable
+  normal! gg
+  
+  " Save results automatically
+  call vimgolf#SaveResults(l:keystroke_count, l:time_taken, l:score)
+  
+  " Force status line update
+  redrawstatus!
+endfunction
+
 " Helper function to get today's date in YYYY-MM-DD format (UTC)
 function! vimgolf#GetTodayDate()
   return strftime('%Y-%m-%d', localtime())
@@ -18,28 +114,7 @@ endfunction
 
 " Load a challenge from the challenges directory
 function! vimgolf#LoadChallenge(date)
-  let l:challenge_file = g:vimgolf_challenges_dir . '/' . a:date . '.json'
-  
-  if !filereadable(l:challenge_file)
-    call vimgolf#FetchChallenge(a:date)
-  endif
-  
-  if filereadable(l:challenge_file)
-    let l:challenge_data = json_decode(join(readfile(l:challenge_file), "\n"))
-    return l:challenge_data
-  endif
-  
-  return {}
-endfunction
-
-" Fetch a challenge for the given date
-function! vimgolf#FetchChallenge(date)
-  " Ensure the challenge directory exists
-  if !isdirectory(g:vimgolf_challenges_dir)
-    call mkdir(g:vimgolf_challenges_dir, 'p')
-  endif
-
-  " Fetch challenge from API
+  " Always fetch fresh challenge from API
   let l:challenge = vimgolf_api#FetchDailyChallenge()
   
   if empty(l:challenge)
@@ -47,11 +122,13 @@ function! vimgolf#FetchChallenge(date)
     return {}
   endif
   
-  " Save challenge to local cache
-  let l:challenge_file = g:vimgolf_challenges_dir . '/' . a:date . '.json'
-  call writefile([json_encode(l:challenge)], l:challenge_file)
-  
   return l:challenge
+endfunction
+
+" Fetch a challenge for the given date
+function! vimgolf#FetchChallenge(date)
+  " Always fetch fresh challenge from API
+  return vimgolf_api#FetchDailyChallenge()
 endfunction
 
 " Play today's challenge
@@ -183,60 +260,40 @@ function! vimgolf#StopTracking()
   echo "VimGolf tracking stopped."
 endfunction
 
+" Normalize text for comparison
+function! s:NormalizeText(text)
+  " Remove any trailing whitespace from each line
+  let l:lines = split(a:text, '\n')
+  let l:lines = map(l:lines, 'substitute(v:val, "\\s\\+$", "", "")')
+  
+  " Remove trailing tildes
+  let l:lines = filter(l:lines, 'v:val !~ "^\\~*$"')
+  
+  " Join lines back together with Unix-style line endings
+  let l:normalized = join(l:lines, "\n")
+  
+  " Ensure text ends with exactly one newline
+  let l:normalized = substitute(l:normalized, '\n*$', '\n', '')
+  
+  return l:normalized
+endfunction
+
 " Automatically verify solution as user types
 function! vimgolf#AutoVerify()
-  " Only if we're tracking and in a VimGolf buffer
-  if !s:vimgolf_tracking || !exists('b:vimgolf_tracking')
-    return
-  endif
-  
-  " Get current buffer content
-  let l:current_text = join(getline(1, '$'), "\n")
-  
-  " Simple direct comparison with target text
-  if l:current_text ==# s:vimgolf_target_text
-    " We match! Show success if not already shown
-    if !exists('b:vimgolf_success_shown') || b:vimgolf_success_shown == 0
+  " Get current buffer content and target text
+  let l:current_text = s:NormalizeText(join(getline(1, '$'), "\n"))
+  let l:target_text = s:vimgolf_target_text
+
+  " Compare normalized texts
+  if l:current_text ==# l:target_text
+    if !exists('b:vimgolf_success_shown') || !b:vimgolf_success_shown
+      let b:vimgolf_success_shown = 1
       call vimgolf#ShowSuccess()
     endif
   else
-    " We don't match. Clear success indication if it was shown
-    if exists('b:vimgolf_success_shown') && b:vimgolf_success_shown == 1
-      call vimgolf#ClearSuccessIndication()
-    endif
+    call vimgolf#ClearSuccessHighlight()
+    let b:vimgolf_success_shown = 0
   endif
-endfunction
-
-" Show success message and score
-function! vimgolf#ShowSuccess()
-  let b:vimgolf_success_shown = 1
-  
-  " Count keystrokes (ignoring tracking events)
-  let l:keystroke_count = 0
-  for keystroke in s:vimgolf_keystrokes
-    if keystroke.key != 'START' && keystroke.key != 'END' &&
-         \ keystroke.key != 'InsertEnter' && keystroke.key != 'InsertLeave' &&
-         \ keystroke.key != 'CmdlineEnter' && keystroke.key != 'CmdlineLeave' &&
-         \ !matchstr(keystroke.key, '<.\+>') " Ignore special keys
-        let l:keystroke_count += 1
-    endif
-  endfor
-
-  " Calculate score
-  let l:score = vimgolf#CalculateScore(l:keystroke_count)
-
-  " Success message
-  echohl MoreMsg
-  echo "SUCCESS! Solution matches target."
-  echo "Keystrokes: " . l:keystroke_count . " | Par: " . s:vimgolf_par . " | Score: " . l:score.name
-  echohl None
-
-  " Set highlighting to indicate success
-  highlight VimGolfSuccess ctermbg=22 guibg=#005500
-  let w:vimgolf_match_id = matchadd('VimGolfSuccess', '.*')
-
-  " Force status line update
-  redrawstatus!
 endfunction
 
 " Clear the success indication
@@ -271,8 +328,10 @@ function! vimgolf#CalculateScore(keystroke_count)
     return {'name': 'Par (0)', 'value': 0}
   elseif a:keystroke_count <= l:par + 2
     return {'name': 'Bogey (+1)', 'value': 1}
-  else
+  elif a:keystroke_count <= l:par + 3
     return {'name': 'Double Bogey (+2)', 'value': 2}
+  else
+    return {'name': 'Triple Bogey (+3)', 'value': 3}
   endif
 endfunction
 

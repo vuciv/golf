@@ -56,8 +56,6 @@ These directories will be created automatically when the plugin is loaded.
 4. Commands                                           *vimgolf-commands*
 
 |:VimGolfToday|         Load today's VimGolf challenge
-|:VimGolfVerify|        Verify your solution against the target text
-|:VimGolfShowTarget|    Show the target text in a side-by-side split window
 |:VimGolfShareSummary|  Copy a shareable summary to the clipboard
 
 ==============================================================================
@@ -68,9 +66,9 @@ These directories will be created automatically when the plugin is loaded.
     :VimGolfToday
 <
 
-2. The challenge will open in a new buffer, with the target text always visible
-   in a split window on the right. This allows you to see what you're aiming
-   for as you edit.
+2. The challenge will open in a new buffer, with the target text automatically
+   shown in a split window on the right. This allows you to see what you're
+   aiming for as you edit.
 
 3. Edit the text using Vim to transform it into the target text.
    As you edit, the plugin automatically checks if your solution matches the
@@ -80,17 +78,10 @@ These directories will be created automatically when the plugin is loaded.
    it easier to see your goal. Both windows are synchronized for scrolling,
    making comparison easy.
 
-5. If needed, manually verify your solution:
->
-    :VimGolfVerify
-<
-   This is usually not needed since verification happens automatically, but 
-   you can use this command to force a verification check.
-
-6. When your solution matches the target, the plugin will display your
+5. When your solution matches the target, the plugin will display your
    score, save your results, and highlight the buffer with a success color.
 
-7. To share your results, copy the summary to clipboard:
+6. To share your results, copy the summary to clipboard:
 >
     :VimGolfShareSummary
 <
@@ -126,7 +117,8 @@ A: The plugin checks your buffer content against the target text after each
 
 Q: Can I hide the target text window?
 A: Yes, you can close the target window with Ctrl-W q if you prefer to work
-   without it. You can always bring it back with :VimGolfShowTarget.
+   without it. The target text is always shown automatically when starting
+   a new challenge.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl: 
