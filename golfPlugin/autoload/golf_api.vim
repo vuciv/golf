@@ -3,7 +3,7 @@
 " Version: 0.1
 
 " API Configuration
-let s:api_base_url = 'localhost:3000/v1'
+let s:api_base_url = 'https://golf-d5bs.onrender.com/v1'
 let s:api_version = 'v1'
 
 " API endpoints
