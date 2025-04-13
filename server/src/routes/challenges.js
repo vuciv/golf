@@ -40,7 +40,8 @@ router.get('/daily', async (req, res) => {
       end_text: dailyChallenge.end_text,
       par: dailyChallenge.par,
       difficulty: dailyChallenge.difficulty,
-      description: dailyChallenge.description
+      description: dailyChallenge.description,
+      tags: dailyChallenge.tags
     });
   } catch (err) {
     console.error('Error fetching daily challenge:', err);
@@ -64,7 +65,8 @@ router.get('/:id', async (req, res) => {
       end_text: challenge.end_text,
       par: challenge.par,
       difficulty: challenge.difficulty,
-      description: challenge.description
+      description: challenge.description,
+      tags: challenge.tags
     });
   } catch (err) {
     console.error('Error fetching challenge:', err);
@@ -81,7 +83,8 @@ router.post('/', async (req, res) => {
       end_text: req.body.end_text,
       par: req.body.par,
       difficulty: req.body.difficulty,
-      description: req.body.description
+      description: req.body.description,
+      tags: req.body.tags || []
     });
 
     await challenge.save();

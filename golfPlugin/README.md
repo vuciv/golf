@@ -1,10 +1,10 @@
-# VimGolf Plugin
+# Golf Plugin
 
-A Vim plugin that lets you play VimGolf challenges directly inside your editor.
+A Vim plugin that lets you play Golf challenges directly inside your editor.
 
-## What is VimGolf?
+## What is Golf?
 
-VimGolf is a game where players compete to solve text editing challenges in the fewest keystrokes possible. This plugin brings VimGolf challenges directly to your Vim editor, allowing you to practice and improve your Vim skills offline.
+Golf is a game where players compete to solve text editing challenges in the fewest keystrokes possible. This plugin brings Golf challenges directly to your Vim editor, allowing you to practice and improve your Vim skills offline.
 
 ## Features
 
@@ -22,39 +22,39 @@ VimGolf is a game where players compete to solve text editing challenges in the 
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'username/vimgolf'
+Plug 'username/golf'
 ```
 
 ### Using [Vundle](https://github.com/VundleVim/Vundle.vim)
 
 ```vim
-Plugin 'username/vimgolf'
+Plugin 'username/golf'
 ```
 
 ### Manual Installation
 
 ```bash
-git clone https://github.com/username/vimgolf.git ~/.vim/pack/plugins/start/vimgolf
+git clone https://github.com/username/golf.git ~/.vim/pack/plugins/start/golf
 ```
 
 ## Usage
 
 1. Start today's challenge:
 ```vim
-:VimGolfToday
+:GolfToday
 ```
 
 2. Edit the text using Vim to transform it into the target text. The plugin automatically verifies your solution as you type and will notify you immediately when you've completed the challenge!
 
 3. If you want to see what the target text should look like:
 ```vim
-:VimGolfShowTarget
+:GolfShowTarget
 ```
 This will open a vertical split showing the target text side-by-side with your working buffer. The windows are synchronized for scrolling, making it easy to compare your progress with the goal.
 
 4. If needed, manually verify your solution:
 ```vim
-:VimGolfVerify
+:GolfVerify
 ```
 This is typically unnecessary since verification happens automatically, but you can use this command to force a verification check.
 
@@ -62,17 +62,17 @@ This is typically unnecessary since verification happens automatically, but you 
 
 6. Share your results:
 ```vim
-:VimGolfShareSummary
+:GolfShareSummary
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `:VimGolfToday` | Load today's VimGolf challenge |
-| `:VimGolfVerify` | Verify your solution against the target text |
-| `:VimGolfShowTarget` | Show the target text in a side-by-side split window for comparison |
-| `:VimGolfShareSummary` | Copy a shareable summary to the clipboard |
+| `:GolfToday` | Load today's Golf challenge |
+| `:GolfVerify` | Verify your solution against the target text |
+| `:GolfShowTarget` | Show the target text in a side-by-side split window for comparison |
+| `:GolfShareSummary` | Copy a shareable summary to the clipboard |
 
 ## Scoring
 
@@ -88,15 +88,15 @@ Scores are calculated based on the number of keystrokes compared to the par:
 
 ```vim
 " Default configuration
-let g:vimgolf_data_dir = expand('~/.vimgolf')
-let g:vimgolf_challenges_dir = g:vimgolf_data_dir . '/challenges'
+let g:golf_data_dir = expand('~/.golf')
+let g:golf_challenges_dir = g:golf_data_dir . '/challenges'
 ```
 
 ## How It Works
 
 1. **Challenge Loading**: The plugin loads challenges from a local directory. In this MVP, it generates a sample challenge for the current date.
 
-2. **Keystroke Tracking**: Every keystroke you make in the VimGolf buffer is tracked, including mode changes and navigation.
+2. **Keystroke Tracking**: Every keystroke you make in the Golf buffer is tracked, including mode changes and navigation.
 
 3. **Auto-Verification**: After each edit, the plugin automatically compares your buffer with the target text. When they match, it immediately shows your success!
 
@@ -106,9 +106,9 @@ let g:vimgolf_challenges_dir = g:vimgolf_data_dir . '/challenges'
 
 ## Project Status
 
-This is an early version of the VimGolf plugin. Future enhancements may include:
+This is an early version of the Golf plugin. Future enhancements may include:
 
-- Connection to official VimGolf API for challenge retrieval
+- Connection to official Golf API for challenge retrieval
 - More accurate keystroke tracking
 - Replay functionality
 - Leaderboards

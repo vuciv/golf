@@ -34,7 +34,7 @@ router.get('/leaderboard/:challenge_id', async (req, res) => {
     const solutions = await Solution.find({ challenge: req.params.challenge_id })
       .sort({ keystrokes: 1, time_taken: 1 })
       .limit(10)
-      .select('keystrokes time_taken score user_id submitted_at');
+      .select('keystrokes time_taken score user_id submitted_at keylog');
 
     res.json(solutions);
   } catch (err) {

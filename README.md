@@ -1,4 +1,4 @@
-# VimGolf
+# Golf
 
 A Vim plugin and server implementation for practicing and improving your Vim skills through coding challenges.
 
@@ -6,12 +6,12 @@ A Vim plugin and server implementation for practicing and improving your Vim ski
 
 This repository consists of two main components:
 
-- `vimGolfPlugin/`: A Vim plugin for interacting with VimGolf challenges directly from your editor
-- `server/`: A Node.js server implementation for hosting and managing VimGolf challenges
+- `golfPlugin/`: A Vim plugin for interacting with Golf challenges directly from your editor
+- `server/`: A Node.js server implementation for hosting and managing Golf challenges
 
-## What is VimGolf?
+## What is Golf?
 
-VimGolf is a game where you compete to solve text manipulation challenges in the fewest keystrokes possible using Vim. Each challenge presents you with a starting text and a target text - your goal is to transform the start text into the target text using as few keystrokes as possible.
+Golf is a game where you compete to solve text manipulation challenges in the fewest keystrokes possible using Vim. Each challenge presents you with a starting text and a target text - your goal is to transform the start text into the target text using as few keystrokes as possible.
 
 ## Getting Started
 
@@ -25,14 +25,14 @@ VimGolf is a game where you compete to solve text manipulation challenges in the
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/vuciv/vimGolf.git
+git clone https://github.com/vuciv/golf.git
 ```
 
 2. Copy or symlink the plugin files to your Vim plugin directory:
 ```bash
-cp -r vimGolfPlugin/* ~/.vim/plugin/
+cp -r golfPlugin/* ~/.vim/plugin/
 # or for Neovim
-cp -r vimGolfPlugin/* ~/.config/nvim/plugin/
+cp -r golfPlugin/* ~/.config/nvim/plugin/
 ```
 
 ### Server Setup
@@ -50,7 +50,7 @@ npm install
 3. Create a `.env` file with your configuration:
 ```env
 PORT=3000
-MONGODB_URI=mongodb://localhost/vimgolf
+MONGODB_URI=mongodb://localhost/golf
 NODE_ENV=development
 ```
 

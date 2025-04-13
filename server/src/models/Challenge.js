@@ -28,6 +28,10 @@ const challengeSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  tags: {
+    type: [String],
+    default: []
+  },
   created_at: {
     type: Date,
     default: Date.now
