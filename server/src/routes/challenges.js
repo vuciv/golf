@@ -49,6 +49,96 @@ router.get('/daily', async (req, res) => {
   }
 });
 
+// Get random challenge by difficulty, tag, or any
+router.get('/random', async (req, res) => {
+  const { difficulty, tag } = req.query;
+  const validDifficulties = ['easy', 'medium', 'hard'];
+  let matchCriteria = {}; // Default: match any challenge
+
+  if (difficulty) {
+    if (!validDifficulties.includes(difficulty.toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid difficulty parameter. Use easy, medium, or hard.' });
+    }
+    matchCriteria = { difficulty: difficulty.toLowerCase() };
+  } else if (tag) {
+    // Match challenges that contain the specified tag in their tags array
+    matchCriteria = { tags: { $in: [tag] } }; // Case-sensitive tag matching
+  }
+  // If neither difficulty nor tag is provided, matchCriteria remains empty, matching any challenge.
+
+  try {
+    const randomChallenges = await Challenge.aggregate([
+      { $match: matchCriteria }, // Apply filter based on difficulty, tag, or none
+      { $sample: { size: 1 } }  // Get 1 random document from the matched set
+    ]);
+
+    if (!randomChallenges || randomChallenges.length === 0) {
+      let errorMessage = 'No challenges found';
+      if (difficulty) errorMessage += ` for difficulty: ${difficulty}`;
+      if (tag) errorMessage += ` with tag: ${tag}`;
+      return res.status(404).json({ error: `${errorMessage}.` });
+    }
+
+    const challenge = randomChallenges[0];
+
+    res.json({
+      id: challenge._id,
+      title: challenge.title,
+      start_text: challenge.start_text,
+      end_text: challenge.end_text,
+      par: challenge.par,
+      difficulty: challenge.difficulty,
+      description: challenge.description,
+      tags: challenge.tags
+    });
+  } catch (err) {
+    console.error(`Error fetching random challenge:`, err);
+    res.status(500).json({ error: 'Failed to fetch random challenge' });
+  }
+});
+
+// Get challenge by specific date (YYYY-MM-DD)
+router.get('/date/:date', async (req, res) => {
+  const { date } = req.params;
+  // Basic validation for YYYY-MM-DD format
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD.' });
+  }
+
+  try {
+    const targetDate = new Date(date + 'T00:00:00.000Z'); // Parse as UTC start of day
+    if (isNaN(targetDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid date value.' });
+    }
+
+    // Find the challenge marked as daily for the target date
+    const challenge = await Challenge.findOne({
+      is_daily: true,
+      daily_date: targetDate
+    });
+
+    if (!challenge) {
+      // Optional: Could try fetching a non-daily challenge created on that date, 
+      // but sticking to the daily definition for now.
+      return res.status(404).json({ error: `No daily challenge found for date: ${date}` });
+    }
+
+    res.json({
+      id: challenge._id,
+      title: challenge.title,
+      start_text: challenge.start_text,
+      end_text: challenge.end_text,
+      par: challenge.par,
+      difficulty: challenge.difficulty,
+      description: challenge.description,
+      tags: challenge.tags
+    });
+  } catch (err) {
+    console.error(`Error fetching challenge for date ${date}:`, err);
+    res.status(500).json({ error: 'Failed to fetch challenge by date' });
+  }
+});
+
 // Get specific challenge by ID
 router.get('/:id', async (req, res) => {
   try {

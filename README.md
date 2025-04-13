@@ -62,6 +62,51 @@ This command:
 - Opens a new buffer with the challenge text and a side-by-side split showing the target text.
 - Begins tracking your keystrokes.
 
+**Play a Random Challenge by Difficulty:**
+In Vim, run:
+```
+:Golf <difficulty>
+```
+Where `<difficulty>` is one of `easy`, `medium`, or `hard` (case-insensitive).
+
+Examples:
+```
+:Golf easy
+:Golf medium
+:Golf hard
+```
+This command fetches a random challenge matching the specified difficulty.
+
+**Play a Random Challenge (Any Difficulty):**
+In Vim, run:
+```
+:Golf
+```
+This command fetches a completely random challenge, regardless of difficulty.
+
+**Play a Random Challenge by Tag:**
+In Vim, run:
+```
+:Golf tag <tag-name>
+```
+Example:
+```
+:Golf tag regex
+:Golf tag "multi line"
+```
+This command fetches a random challenge that includes the specified tag.
+
+**Play a Challenge from a Specific Date:**
+In Vim, run:
+```
+:Golf date <YYYY-MM-DD>
+```
+Example:
+```
+:Golf date 2023-10-27
+```
+This command fetches the daily challenge designated for the specified date.
+
 **Keystroke Tracking & Auto-Verification:**
 Every keystroke is recorded. The plugin continuously compares your edited buffer against the target text. When your solution matches perfectly, a success screen is shown with statistics including the stroke count, time taken, and your score relative to par.
 

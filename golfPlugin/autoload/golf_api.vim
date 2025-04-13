@@ -3,7 +3,7 @@
 " Version: 0.1
 
 " API Configuration
-let s:api_base_url = 'https://golf-d5bs.onrender.com/v1'
+let s:api_base_url = 'localhost:3000/v1'
 let s:api_version = 'v1'
 
 " API endpoints
@@ -82,6 +82,104 @@ function! golf_api#FetchDailyChallenge()
         \ 'date': strftime('%Y-%m-%d', localtime())
         \ }
   
+  return l:challenge
+endfunction
+
+" Rename for clarity, this fetches by difficulty
+function! golf_api#FetchRandomChallengeByDifficulty(difficulty)
+  let l:endpoint = s:endpoints.challenge . '/random?difficulty=' . a:difficulty
+  let l:response = golf_api#HttpGet(l:endpoint)
+
+  if empty(l:response)
+    echoerr "Failed to fetch random " . a:difficulty . " challenge"
+    return {}
+  endif
+
+  " Transform API response to match expected challenge format
+  let l:challenge = {
+        \ 'id': get(l:response, 'id', ''),
+        \ 'name': get(l:response, 'title', ''),
+        \ 'startingText': get(l:response, 'start_text', ''),
+        \ 'targetText': get(l:response, 'end_text', ''),
+        \ 'par': get(l:response, 'par', 0),
+        \ 'difficulty': get(l:response, 'difficulty', a:difficulty),
+        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ }
+
+  return l:challenge
+endfunction
+
+" Function to fetch completely random challenge (any difficulty)
+function! golf_api#FetchRandomChallengeAny()
+  let l:endpoint = s:endpoints.challenge . '/random'
+  let l:response = golf_api#HttpGet(l:endpoint)
+
+  if empty(l:response)
+    echoerr "Failed to fetch random challenge"
+    return {}
+  endif
+
+  " Transform API response to match expected challenge format
+  let l:challenge = {
+        \ 'id': get(l:response, 'id', ''),
+        \ 'name': get(l:response, 'title', ''),
+        \ 'startingText': get(l:response, 'start_text', ''),
+        \ 'targetText': get(l:response, 'end_text', ''),
+        \ 'par': get(l:response, 'par', 0),
+        \ 'difficulty': get(l:response, 'difficulty', 'unknown'),
+        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ }
+
+  return l:challenge
+endfunction
+
+" Function to fetch random challenge by tag
+function! golf_api#FetchRandomChallengeByTag(tag)
+  let l:endpoint = s:endpoints.challenge . '/random?tag=' . substitute(a:tag, ' ', '%20', 'g') " URL encode tag?
+  let l:response = golf_api#HttpGet(l:endpoint)
+
+  if empty(l:response)
+    echoerr "Failed to fetch random challenge with tag: " . a:tag
+    return {}
+  endif
+
+  " Transform API response to match expected challenge format
+  let l:challenge = {
+        \ 'id': get(l:response, 'id', ''),
+        \ 'name': get(l:response, 'title', ''),
+        \ 'startingText': get(l:response, 'start_text', ''),
+        \ 'targetText': get(l:response, 'end_text', ''),
+        \ 'par': get(l:response, 'par', 0),
+        \ 'difficulty': get(l:response, 'difficulty', 'unknown'),
+        \ 'tag': a:tag,
+        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ }
+
+  return l:challenge
+endfunction
+
+" Function to fetch challenge by specific date
+function! golf_api#FetchChallengeByDate(date)
+  " Assuming endpoint is /challenges/date/YYYY-MM-DD
+  let l:endpoint = s:endpoints.challenge . '/date/' . a:date
+  let l:response = golf_api#HttpGet(l:endpoint)
+
+  if empty(l:response)
+    echoerr "Failed to fetch challenge for date: " . a:date
+    return {}
+  endif
+
+  " Transform API response to match expected challenge format
+  let l:challenge = {
+        \ 'id': get(l:response, 'id', ''),
+        \ 'name': get(l:response, 'title', ''),
+        \ 'startingText': get(l:response, 'start_text', ''),
+        \ 'targetText': get(l:response, 'end_text', ''),
+        \ 'par': get(l:response, 'par', 0),
+        \ 'difficulty': get(l:response, 'difficulty', 'unknown'),
+        \ 'date': a:date
+        \ }
+
   return l:challenge
 endfunction
 

@@ -31,4 +31,12 @@ endfunction
 call s:EnsureDirectories()
 
 " Command to play today's Golf challenge
-command! -nargs=0 GolfToday call golf#PlayToday() 
+command! -nargs=0 GolfToday call golf#PlayToday()
+
+" Command to play a specific or random Golf challenge
+" Usage:
+"   :Golf             " Play random challenge (any difficulty)
+"   :Golf <difficulty>" Play random challenge (easy/medium/hard)
+"   :Golf tag <tag>   " Play random challenge by tag
+"   :Golf date <YYYY-MM-DD> " Play challenge for a specific date
+command! -nargs=* Golf call golf#DispatchGolfCommand(<f-args>) 

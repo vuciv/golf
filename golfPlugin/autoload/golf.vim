@@ -28,7 +28,7 @@ endfunction
 " Load a challenge from the challenges directory (fetch fresh from API)
 function! golf#LoadChallenge(date) abort
   let l:challenge = golf_api#FetchDailyChallenge()
-  if empty(l:challenge)
+  if empty(l:challenge) || empty(get(l:challenge, 'id', '')) || empty(get(l:challenge, 'targetText', ''))
     echoerr "Failed to fetch challenge from API"
     return {}
   endif
@@ -50,6 +50,29 @@ function! golf#PlayToday() abort
   if empty(l:challenge)
     return
   endif
+  call golf#PlayChallenge(l:challenge)
+endfunction
+
+" Play a random challenge by difficulty
+function! golf#PlayChallengeByDifficulty(difficulty) abort
+  let l:valid_difficulties = ['easy', 'medium', 'hard']
+  let l:difficulty = tolower(a:difficulty)
+
+  if index(l:valid_difficulties, l:difficulty) == -1
+    echoerr "Invalid difficulty: " . a:difficulty . ". Please use 'easy', 'medium', or 'hard'."
+    return
+  endif
+
+  " Save the current buffer number
+  let s:golf_original_buffer = bufnr('%')
+
+  echo "Fetching " . l:difficulty . " challenge..."
+  let l:challenge = golf_api#FetchRandomChallengeByDifficulty(l:difficulty)
+  if empty(l:challenge) || empty(get(l:challenge, 'id', '')) || empty(get(l:challenge, 'targetText', ''))
+    echoerr "Failed to fetch " . l:difficulty . " challenge."
+    return
+  endif
+
   call golf#PlayChallenge(l:challenge)
 endfunction
 
@@ -467,4 +490,75 @@ function! golf#ShowTargetText() abort
   setlocal scrollbind
   setlocal cursorbind
   syncbind
+endfunction
+
+" Dispatcher for the :Golf command based on arguments
+function! golf#DispatchGolfCommand(...) abort
+  let l:argc = a:0
+  if l:argc == 0
+    " :Golf (no args) -> Play random challenge (any difficulty)
+    call golf#PlayRandomChallenge()
+  elseif l:argc == 1
+    " :Golf <difficulty>
+    let l:arg1 = tolower(a:1)
+    if l:arg1 == 'easy' || l:arg1 == 'medium' || l:arg1 == 'hard'
+      call golf#PlayChallengeByDifficulty(l:arg1)
+    else
+      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'tag <tag>', or 'date <YYYY-MM-DD>'."
+    endif
+  elseif l:argc == 2
+    let l:arg1 = tolower(a:1)
+    let l:arg2 = a:2
+    if l:arg1 == 'tag'
+      " :Golf tag <tag>
+      call golf#PlayChallengeByTag(l:arg2)
+    elseif l:arg1 == 'date'
+      " :Golf date <YYYY-MM-DD>
+      if l:arg2 =~ '^\d\{4}-\d\{2}-\d\{2}$'
+        call golf#PlayChallengeByDate(l:arg2)
+      else
+        echoerr "Invalid date format: " . l:arg2 . ". Use YYYY-MM-DD format."
+      endif
+    else
+      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', or ':Golf date <YYYY-MM-DD>'."
+    endif
+  else
+    echoerr "Too many arguments. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', or ':Golf date <YYYY-MM-DD>'."
+  endif
+endfunction
+
+" Play a completely random challenge
+function! golf#PlayRandomChallenge() abort
+  let s:golf_original_buffer = bufnr('%')
+  echo "Fetching random challenge..."
+  let l:challenge = golf_api#FetchRandomChallengeAny()
+  if empty(l:challenge) || empty(get(l:challenge, 'id', '')) || empty(get(l:challenge, 'targetText', ''))
+    echoerr "Failed to fetch random challenge."
+    return
+  endif
+  call golf#PlayChallenge(l:challenge)
+endfunction
+
+" Play a random challenge by tag
+function! golf#PlayChallengeByTag(tag) abort
+  let s:golf_original_buffer = bufnr('%')
+  echo "Fetching random challenge with tag: " . a:tag . "..."
+  let l:challenge = golf_api#FetchRandomChallengeByTag(a:tag)
+  if empty(l:challenge) || empty(get(l:challenge, 'id', '')) || empty(get(l:challenge, 'targetText', ''))
+    echoerr "Failed to fetch random challenge with tag: " . a:tag . "."
+    return
+  endif
+  call golf#PlayChallenge(l:challenge)
+endfunction
+
+" Play the challenge for a specific date
+function! golf#PlayChallengeByDate(date) abort
+  let s:golf_original_buffer = bufnr('%')
+  echo "Fetching challenge for date: " . a:date . "..."
+  let l:challenge = golf_api#FetchChallengeByDate(a:date)
+  if empty(l:challenge) || empty(get(l:challenge, 'id', '')) || empty(get(l:challenge, 'targetText', ''))
+    echoerr "Failed to fetch challenge for date: " . a:date . "."
+    return
+  endif
+  call golf#PlayChallenge(l:challenge)
 endfunction
