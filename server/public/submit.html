@@ -30,13 +30,13 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    alert('Challenge submitted successfully! It will be reviewed before being made public. Thank you for your contribution!');
-                    form.reset();
+                    window.location.href = `/challenges.html?success=true&id=${result.id}`;
                 } else {
                     const error = await response.json();
-                    alert(`Error: ${error.message || 'Failed to submit challenge'}`);
+                    alert(`Error: ${error.message || error.error || 'Failed to submit challenge'}`);
                 }
             } catch (error) {
+                console.error('Error submitting challenge:', error);
                 alert('Error submitting challenge. Please try again.');
             }
         }
@@ -73,7 +73,7 @@
             </div>
         </div>
         
-        <form onsubmit="submitChallenge(event)" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 space-y-6">
+        <form onsubmit="submitChallenge(event)" method="POST" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 space-y-6">
             <div>
                 <label for="title" class="block text-gray-700 font-bold mb-2">🎯 Challenge Title</label>
                 <input type="text" id="title" name="title" required
