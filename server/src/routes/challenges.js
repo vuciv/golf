@@ -2,6 +2,23 @@ const express = require('express');
 const router = express.Router();
 const Challenge = require('../models/Challenge');
 
+// Get all challenges
+router.get('/all', async (req, res) => {
+  try {
+    const challenges = await Challenge.find({ 
+      is_daily: false,
+      is_approved: true // Only return approved challenges
+    })
+      .select('title description par difficulty tags')
+      .sort({ created_at: -1 });
+
+    res.json(challenges);
+  } catch (err) {
+    console.error('Error fetching challenges:', err);
+    res.status(500).json({ error: 'Failed to fetch challenges' });
+  }
+});
+
 // Get daily challenge
 router.get('/daily', async (req, res) => {
   try {
@@ -14,10 +31,11 @@ router.get('/daily', async (req, res) => {
       daily_date: today
     });
 
-    // If no challenge is set for today, get a random one and set it as daily
+    // If no challenge is set for today, get a random approved one and set it as daily
     if (!dailyChallenge) {
       const randomChallenge = await Challenge.findOne({
-        is_daily: false
+        is_daily: false,
+        is_approved: true // Only use approved challenges for daily challenges
       }).sort({ created_at: -1 });
 
       if (!randomChallenge) {
@@ -29,6 +47,7 @@ router.get('/daily', async (req, res) => {
         ...randomChallenge.toObject(),
         _id: undefined,
         is_daily: true,
+        is_approved: true, // Daily challenges are automatically approved
         daily_date: today
       });
       await dailyChallenge.save();
@@ -58,23 +77,22 @@ router.get('/daily', async (req, res) => {
 router.get('/random', async (req, res) => {
   const { difficulty, tag } = req.query;
   const validDifficulties = ['easy', 'medium', 'hard'];
-  let matchCriteria = {}; // Default: match any challenge
+  let matchCriteria = { is_approved: true }; // Default: match any approved challenge
 
   if (difficulty) {
     if (!validDifficulties.includes(difficulty.toLowerCase())) {
       return res.status(400).json({ error: 'Invalid difficulty parameter. Use easy, medium, or hard.' });
     }
-    matchCriteria = { difficulty: difficulty.toLowerCase() };
+    matchCriteria.difficulty = difficulty.toLowerCase();
   } else if (tag) {
-    // Match challenges that contain the specified tag in their tags array
-    matchCriteria = { tags: { $in: [tag] } }; // Case-sensitive tag matching
+    // Match approved challenges that contain the specified tag
+    matchCriteria.tags = { $in: [tag] };
   }
-  // If neither difficulty nor tag is provided, matchCriteria remains empty, matching any challenge.
 
   try {
     const randomChallenges = await Challenge.aggregate([
-      { $match: matchCriteria }, // Apply filter based on difficulty, tag, or none
-      { $sample: { size: 1 } }  // Get 1 random document from the matched set
+      { $match: matchCriteria },
+      { $sample: { size: 1 } }
     ]);
 
     if (!randomChallenges || randomChallenges.length === 0) {
@@ -150,7 +168,10 @@ router.get('/date/:date', async (req, res) => {
 // Get specific challenge by ID
 router.get('/:id', async (req, res) => {
   try {
-    const challenge = await Challenge.findById(req.params.id);
+    const challenge = await Challenge.findOne({
+      _id: req.params.id,
+      is_approved: true // Only return approved challenges
+    });
     
     if (!challenge) {
       return res.status(404).json({ error: 'Challenge not found' });
@@ -182,11 +203,15 @@ router.post('/', async (req, res) => {
       par: req.body.par,
       difficulty: req.body.difficulty,
       description: req.body.description,
-      tags: req.body.tags || []
+      tags: req.body.tags || [],
+      is_approved: false // All new submissions start as unapproved
     });
 
     await challenge.save();
-    res.status(201).json(challenge);
+    res.status(201).json({ 
+      message: 'Challenge submitted successfully. It will be reviewed before being made public.',
+      id: challenge._id
+    });
   } catch (err) {
     console.error('Error creating challenge:', err);
     res.status(500).json({ error: 'Failed to create challenge' });

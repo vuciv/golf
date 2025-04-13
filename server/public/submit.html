@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit VimGolf Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        async function submitChallenge(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = {
+                title: form.title.value,
+                description: form.description.value,
+                start_text: form.start_text.value,
+                end_text: form.end_text.value,
+                par: parseInt(form.par.value),
+                difficulty: form.difficulty.value,
+                tags: form.tags.value.split(',').map(tag => tag.trim()).filter(tag => tag)
+            };
+
+            try {
+                const response = await fetch('/v1/challenges', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('Challenge submitted successfully! It will be reviewed before being made public. Thank you for your contribution!');
+                    form.reset();
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.message || 'Failed to submit challenge'}`);
+                }
+            } catch (error) {
+                alert('Error submitting challenge. Please try again.');
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen py-12">
+    <div class="container mx-auto px-4 max-w-3xl">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Submit a VimGolf Challenge</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Create a new challenge for the VimGolf community.</p>
+        </header>
+
+        <!-- Review Process Notice -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Review Process</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>All submitted challenges go through a review process to ensure quality and appropriateness. This includes:</p>
+                        <ul class="list-disc ml-5 mt-2">
+                            <li>Verification of challenge solvability</li>
+                            <li>Checking for appropriate content</li>
+                            <li>Validating the par score</li>
+                            <li>Reviewing tags and difficulty rating</li>
+                        </ul>
+                        <p class="mt-2">Your challenge will be made public after approval. This process may take some time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form onsubmit="submitChallenge(event)" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 space-y-6">
+            <div>
+                <label for="title" class="block text-gray-700 font-bold mb-2">Challenge Title</label>
+                <input type="text" id="title" name="title" required
+                    class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                    placeholder="e.g., 'Replace all occurrences with regex'">
+            </div>
+
+            <div>
+                <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
+                <textarea id="description" name="description" required rows="4"
+                    class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                    placeholder="Explain what needs to be done and any specific requirements"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="start_text" class="block text-gray-700 font-bold mb-2">Starting Text</label>
+                    <textarea id="start_text" name="start_text" required rows="6"
+                        class="font-mono text-sm shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                        placeholder="Initial text content"></textarea>
+                </div>
+
+                <div>
+                    <label for="end_text" class="block text-gray-700 font-bold mb-2">Target Text</label>
+                    <textarea id="end_text" name="end_text" required rows="6"
+                        class="font-mono text-sm shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                        placeholder="Desired final text"></textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="par" class="block text-gray-700 font-bold mb-2">Par (Expected Keystrokes)</label>
+                    <input type="number" id="par" name="par" required min="1"
+                        class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                        placeholder="e.g., 15">
+                </div>
+
+                <div>
+                    <label for="difficulty" class="block text-gray-700 font-bold mb-2">Difficulty Level</label>
+                    <select id="difficulty" name="difficulty" required
+                        class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors">
+                        <option value="">Select difficulty...</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="tags" class="block text-gray-700 font-bold mb-2">Tags</label>
+                <input type="text" id="tags" name="tags"
+                    class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
+                    placeholder="e.g., vim, substitution, regex (comma-separated)">
+                <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
+            </div>
+
+            <div class="flex items-center justify-center pt-4">
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors">
+                    Submit Challenge
+                </button>
+            </div>
+        </form>
+
+        <footer class="text-center text-gray-600 text-sm">
+            <p class="space-x-4">
+                <a href="guidelines.html" class="text-blue-500 hover:text-blue-700 transition-colors">Submission Guidelines</a>
+                <span>•</span>
+                <a href="challenges.html" class="text-blue-500 hover:text-blue-700 transition-colors">View All Challenges</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html> 

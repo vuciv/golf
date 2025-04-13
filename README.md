@@ -7,6 +7,7 @@ Golf Plugin is a Vim plugin that brings a challenge-based keystroke game to your
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Submitting Challenges](#submitting-challenges)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -15,6 +16,7 @@ Golf Plugin is a Vim plugin that brings a challenge-based keystroke game to your
 - **Dynamic Challenges:**  
   - Fetch daily challenges from an external API.
   - Each challenge includes a starting text, target text, and a par value representing the optimal number of keystrokes.
+  - Community-contributed challenges with quality assurance through review process.
 
 - **Keystroke Tracking:**  
   - Tracks every keystroke (both normal and insert modes).
@@ -113,6 +115,35 @@ Every keystroke is recorded. The plugin continuously compares your edited buffer
 **Exiting the Challenge:**
 After reviewing the success and leaderboard screen, press any key to exit, and the plugin will return you to your original file.
 
+## Submitting Challenges
+
+You can contribute new challenges to the Golf community through our web interface. Visit:
+```
+https://golf-d5bs.onrender.com/submit.html
+```
+
+When submitting a challenge:
+
+1. **Challenge Components:**
+   - Title: A descriptive name for your challenge
+   - Description: Clear instructions about what needs to be done
+   - Starting Text: The initial text that players will see
+   - Target Text: The text that players need to achieve
+   - Par: The expected number of keystrokes for an optimal solution
+   - Difficulty: Easy, Medium, or Hard
+   - Tags: Relevant categories for your challenge
+
+2. **Review Process:**
+   All submitted challenges go through a review process to ensure quality and appropriateness. This includes:
+   - Verification of challenge solvability
+   - Checking for appropriate content
+   - Validating the par score
+   - Reviewing tags and difficulty rating
+
+3. **Publication:**
+   - Challenges are only made public after approval
+   - You'll receive confirmation when your challenge is submitted
+   - The review process may take some time
 
 ## Contributing
 

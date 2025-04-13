@@ -42,11 +42,17 @@ const challengeSchema = new mongoose.Schema({
   },
   daily_date: {
     type: Date
+  },
+  is_approved: {
+    type: Boolean,
+    default: false
   }
 });
 
 // Index for faster daily challenge queries
 challengeSchema.index({ is_daily: 1, daily_date: -1 });
+// Index for faster approved challenge queries
+challengeSchema.index({ is_approved: 1 });
 
 const Challenge = mongoose.model('Challenge', challengeSchema);
 

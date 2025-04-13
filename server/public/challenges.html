@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VimGolf Challenges</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        let challenges = [];
+        let filteredChallenges = [];
+
+        async function fetchChallenges() {
+            try {
+                const response = await fetch('/v1/challenges/all');
+                challenges = await response.json();
+                filteredChallenges = [...challenges];
+                renderChallenges();
+            } catch (error) {
+                console.error('Error fetching challenges:', error);
+                document.getElementById('challenges-list').innerHTML = `
+                    <div class="text-center text-red-600 py-8">
+                        Failed to load challenges. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        function filterChallenges() {
+            const difficulty = document.getElementById('difficulty-filter').value;
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const tag = document.getElementById('tag-filter').value.toLowerCase();
+
+            filteredChallenges = challenges.filter(challenge => {
+                const matchesDifficulty = !difficulty || challenge.difficulty === difficulty;
+                const matchesSearch = !searchTerm || 
+                    challenge.title.toLowerCase().includes(searchTerm) || 
+                    challenge.description.toLowerCase().includes(searchTerm);
+                const matchesTag = !tag || (challenge.tags && challenge.tags.some(t => t.toLowerCase().includes(tag)));
+                
+                return matchesDifficulty && matchesSearch && matchesTag;
+            });
+
+            renderChallenges();
+        }
+
+        function renderChallenges() {
+            const list = document.getElementById('challenges-list');
+            
+            if (filteredChallenges.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center text-gray-600 py-8">
+                        No challenges found matching your criteria.
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = filteredChallenges.map(challenge => `
+                <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">${challenge.title}</h3>
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(challenge.difficulty)}">
+                            ${challenge.difficulty}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 mb-4">${challenge.description}</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${(challenge.tags || []).map(tag => `
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm">
+                                ${tag}
+                            </span>
+                        `).join('')}
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span>Par: ${challenge.par} keystrokes</span>
+                        <button onclick="tryChallenge('${challenge.id}')" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                            Try Challenge
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getDifficultyColor(difficulty) {
+            const colors = {
+                easy: 'bg-green-100 text-green-800',
+                medium: 'bg-yellow-100 text-yellow-800',
+                hard: 'bg-red-100 text-red-800'
+            };
+            return colors[difficulty] || 'bg-gray-100 text-gray-800';
+        }
+
+        function tryChallenge(id) {
+            // This would link to your challenge solving interface
+            alert('Challenge interface not implemented yet');
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchChallenges();
+            
+            // Set up filter event listeners
+            document.getElementById('difficulty-filter').addEventListener('change', filterChallenges);
+            document.getElementById('search').addEventListener('input', filterChallenges);
+            document.getElementById('tag-filter').addEventListener('input', filterChallenges);
+        });
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen py-12">
+    <div class="container mx-auto px-4">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">VimGolf Challenges</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Browse and attempt Vim challenges created by the community.</p>
+        </header>
+
+        <div class="max-w-6xl mx-auto">
+            <!-- Filters -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="difficulty-filter" class="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                        <select id="difficulty-filter" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">All Difficulties</option>
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" id="search" placeholder="Search challenges..."
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="tag-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by Tag</label>
+                        <input type="text" id="tag-filter" placeholder="Enter tag..."
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Challenge List -->
+            <div id="challenges-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p class="text-gray-600 mt-4">Loading challenges...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center mt-8 space-x-4">
+            <a href="/submit.html" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors">
+                Submit New Challenge
+            </a>
+            <a href="/guidelines.html" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-gray-200 transition-colors">
+                Submission Guidelines
+            </a>
+        </div>
+    </div>
+</body>
+</html>
