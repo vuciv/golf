@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit VimGolf Challenge</title>
+    <title>golf.vim - Create a Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         async function submitChallenge(event) {
@@ -45,8 +45,8 @@
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen py-12">
     <div class="container mx-auto px-4 max-w-3xl">
         <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-4">Submit a VimGolf Challenge</h1>
-            <p class="text-gray-600 max-w-2xl mx-auto">Create a new challenge for the VimGolf community.</p>
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">⛳️ golf.vim ⌨️</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Ready to test your fellow Vimmers? Create a challenge where every keystroke counts! Can they match your score in Normal mode? 🎯</p>
         </header>
 
         <!-- Review Process Notice -->
@@ -58,16 +58,16 @@
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-blue-800">Review Process</h3>
+                    <h3 class="text-sm font-medium text-blue-800">🎉 Welcome to golf.vim! 🎉</h3>
                     <div class="mt-2 text-sm text-blue-700">
-                        <p>All submitted challenges go through a review process to ensure quality and appropriateness. This includes:</p>
+                        <p>Before your challenge makes it to the course, our Vim masters will check:</p>
                         <ul class="list-disc ml-5 mt-2">
-                            <li>Verification of challenge solvability</li>
-                            <li>Checking for appropriate content</li>
-                            <li>Validating the par score</li>
-                            <li>Reviewing tags and difficulty rating</li>
+                            <li>🎯 That it's possible to solve (no impossible shots!)</li>
+                            <li>⌨️ That it's a true test of Vim mastery</li>
+                            <li>🏆 If your par score can be achieved</li>
+                            <li>📝 That your instructions are clear</li>
                         </ul>
-                        <p class="mt-2">Your challenge will be made public after approval. This process may take some time.</p>
+                        <p class="mt-2">Time to show off your Vim-fu! Remember: hjkl your way to victory! ⚡️</p>
                     </div>
                 </div>
             </div>
@@ -75,76 +75,76 @@
         
         <form onsubmit="submitChallenge(event)" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 space-y-6">
             <div>
-                <label for="title" class="block text-gray-700 font-bold mb-2">Challenge Title</label>
+                <label for="title" class="block text-gray-700 font-bold mb-2">🎯 Challenge Title</label>
                 <input type="text" id="title" name="title" required
                     class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                    placeholder="e.g., 'Replace all occurrences with regex'">
+                    placeholder="e.g., 'Master the mighty %s command'">
             </div>
 
             <div>
-                <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
+                <label for="description" class="block text-gray-700 font-bold mb-2">📝 Description</label>
                 <textarea id="description" name="description" required rows="4"
                     class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                    placeholder="Explain what needs to be done and any specific requirements"></textarea>
+                    placeholder="Show your Vim-fu! Explain what needs to be done and any specific requirements"></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="start_text" class="block text-gray-700 font-bold mb-2">Starting Text</label>
+                    <label for="start_text" class="block text-gray-700 font-bold mb-2">🏌️ Starting Text (The Tee)</label>
                     <textarea id="start_text" name="start_text" required rows="6"
                         class="font-mono text-sm shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                        placeholder="Initial text content"></textarea>
+                        placeholder="The starting text that needs Vim magic"></textarea>
                 </div>
 
                 <div>
-                    <label for="end_text" class="block text-gray-700 font-bold mb-2">Target Text</label>
+                    <label for="end_text" class="block text-gray-700 font-bold mb-2">🎯 Target Text (The Hole)</label>
                     <textarea id="end_text" name="end_text" required rows="6"
                         class="font-mono text-sm shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                        placeholder="Desired final text"></textarea>
+                        placeholder="The perfectly edited text after Vim mastery"></textarea>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="par" class="block text-gray-700 font-bold mb-2">Par (Expected Keystrokes)</label>
+                    <label for="par" class="block text-gray-700 font-bold mb-2">⛳️ Par (Expected Keystrokes)</label>
                     <input type="number" id="par" name="par" required min="1"
                         class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                        placeholder="e.g., 15">
+                        placeholder="How many keystrokes for a Vim master?">
                 </div>
 
                 <div>
-                    <label for="difficulty" class="block text-gray-700 font-bold mb-2">Difficulty Level</label>
+                    <label for="difficulty" class="block text-gray-700 font-bold mb-2">💪 Difficulty Level</label>
                     <select id="difficulty" name="difficulty" required
                         class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors">
-                        <option value="">Select difficulty...</option>
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
+                        <option value="">Select your challenge level...</option>
+                        <option value="easy">🟢 Novice Vimmer (Easy)</option>
+                        <option value="medium">🟡 Vim Apprentice (Medium)</option>
+                        <option value="hard">🔴 Vim Master (Hard)</option>
                     </select>
                 </div>
             </div>
 
             <div>
-                <label for="tags" class="block text-gray-700 font-bold mb-2">Tags</label>
+                <label for="tags" class="block text-gray-700 font-bold mb-2">🏷️ Tags</label>
                 <input type="text" id="tags" name="tags"
                     class="shadow-sm border-2 border-gray-200 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors"
-                    placeholder="e.g., vim, substitution, regex (comma-separated)">
+                    placeholder="e.g., macros, regex, motions (comma-separated)">
                 <p class="mt-1 text-sm text-gray-500">Separate tags with commas</p>
             </div>
 
             <div class="flex items-center justify-center pt-4">
                 <button type="submit"
                     class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors">
-                    Submit Challenge
+                    🚀 Submit Your Vim Challenge
                 </button>
             </div>
         </form>
 
         <footer class="text-center text-gray-600 text-sm">
             <p class="space-x-4">
-                <a href="guidelines.html" class="text-blue-500 hover:text-blue-700 transition-colors">Submission Guidelines</a>
+                <a href="guidelines.html" class="text-blue-500 hover:text-blue-700 transition-colors">📖 Submission Guidelines</a>
                 <span>•</span>
-                <a href="challenges.html" class="text-blue-500 hover:text-blue-700 transition-colors">View All Challenges</a>
+                <a href="challenges.html" class="text-blue-500 hover:text-blue-700 transition-colors">🏆 View All Challenges</a>
             </p>
         </footer>
     </div>
