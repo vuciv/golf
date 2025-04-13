@@ -5,8 +5,9 @@ const Challenge = require('../models/Challenge');
 // Get daily challenge
 router.get('/daily', async (req, res) => {
   try {
+    // Get today's date in UTC, zeroed to midnight UTC
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
 
     let dailyChallenge = await Challenge.findOne({
       is_daily: true,
@@ -33,6 +34,9 @@ router.get('/daily', async (req, res) => {
       await dailyChallenge.save();
     }
 
+    // Format date as YYYY-MM-DD in UTC
+    const formattedDate = dailyChallenge.daily_date.toISOString().split('T')[0];
+
     res.json({
       id: dailyChallenge._id,
       title: dailyChallenge.title,
@@ -41,7 +45,8 @@ router.get('/daily', async (req, res) => {
       par: dailyChallenge.par,
       difficulty: dailyChallenge.difficulty,
       description: dailyChallenge.description,
-      tags: dailyChallenge.tags
+      tags: dailyChallenge.tags,
+      daily_date: formattedDate
     });
   } catch (err) {
     console.error('Error fetching daily challenge:', err);
@@ -106,7 +111,8 @@ router.get('/date/:date', async (req, res) => {
   }
 
   try {
-    const targetDate = new Date(date + 'T00:00:00.000Z'); // Parse as UTC start of day
+    // Parse date as UTC midnight
+    const targetDate = new Date(date + 'T00:00:00.000Z');
     if (isNaN(targetDate.getTime())) {
       return res.status(400).json({ error: 'Invalid date value.' });
     }
@@ -118,10 +124,11 @@ router.get('/date/:date', async (req, res) => {
     });
 
     if (!challenge) {
-      // Optional: Could try fetching a non-daily challenge created on that date, 
-      // but sticking to the daily definition for now.
       return res.status(404).json({ error: `No daily challenge found for date: ${date}` });
     }
+
+    // Format date as YYYY-MM-DD in UTC
+    const formattedDate = challenge.daily_date.toISOString().split('T')[0];
 
     res.json({
       id: challenge._id,
@@ -131,7 +138,8 @@ router.get('/date/:date', async (req, res) => {
       par: challenge.par,
       difficulty: challenge.difficulty,
       description: challenge.description,
-      tags: challenge.tags
+      tags: challenge.tags,
+      daily_date: formattedDate
     });
   } catch (err) {
     console.error(`Error fetching challenge for date ${date}:`, err);

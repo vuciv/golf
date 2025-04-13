@@ -63,6 +63,11 @@ function! golf_api#HttpPost(endpoint, data)
   endtry
 endfunction
 
+" Get today's date in YYYY-MM-DD format (UTC)
+function! s:GetTodayUTC()
+  return strftime('%Y-%m-%d', localtime() - strftime('%z') * 36)
+endfunction
+
 " Function to fetch daily challenge
 function! golf_api#FetchDailyChallenge()
   let l:response = golf_api#HttpGet(s:endpoints.daily_challenge)
@@ -72,6 +77,12 @@ function! golf_api#FetchDailyChallenge()
     return {}
   endif
 
+  " Get the date from response or fallback to today's UTC date
+  let l:date = get(l:response, 'daily_date', '')
+  if empty(l:date)
+    let l:date = s:GetTodayUTC()
+  endif
+
   " Transform API response to match expected challenge format
   let l:challenge = {
         \ 'id': get(l:response, 'id', ''),
@@ -79,7 +90,7 @@ function! golf_api#FetchDailyChallenge()
         \ 'startingText': get(l:response, 'start_text', ''),
         \ 'targetText': get(l:response, 'end_text', ''),
         \ 'par': get(l:response, 'par', 0),
-        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ 'date': l:date
         \ }
   
   return l:challenge
@@ -103,7 +114,7 @@ function! golf_api#FetchRandomChallengeByDifficulty(difficulty)
         \ 'targetText': get(l:response, 'end_text', ''),
         \ 'par': get(l:response, 'par', 0),
         \ 'difficulty': get(l:response, 'difficulty', a:difficulty),
-        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ 'date': s:GetTodayUTC()
         \ }
 
   return l:challenge
@@ -127,7 +138,7 @@ function! golf_api#FetchRandomChallengeAny()
         \ 'targetText': get(l:response, 'end_text', ''),
         \ 'par': get(l:response, 'par', 0),
         \ 'difficulty': get(l:response, 'difficulty', 'unknown'),
-        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ 'date': s:GetTodayUTC()
         \ }
 
   return l:challenge
@@ -135,7 +146,7 @@ endfunction
 
 " Function to fetch random challenge by tag
 function! golf_api#FetchRandomChallengeByTag(tag)
-  let l:endpoint = s:endpoints.challenge . '/random?tag=' . substitute(a:tag, ' ', '%20', 'g') " URL encode tag?
+  let l:endpoint = s:endpoints.challenge . '/random?tag=' . substitute(a:tag, ' ', '%20', 'g')
   let l:response = golf_api#HttpGet(l:endpoint)
 
   if empty(l:response)
@@ -152,7 +163,7 @@ function! golf_api#FetchRandomChallengeByTag(tag)
         \ 'par': get(l:response, 'par', 0),
         \ 'difficulty': get(l:response, 'difficulty', 'unknown'),
         \ 'tag': a:tag,
-        \ 'date': strftime('%Y-%m-%d', localtime())
+        \ 'date': s:GetTodayUTC()
         \ }
 
   return l:challenge
@@ -160,7 +171,6 @@ endfunction
 
 " Function to fetch challenge by specific date
 function! golf_api#FetchChallengeByDate(date)
-  " Assuming endpoint is /challenges/date/YYYY-MM-DD
   let l:endpoint = s:endpoints.challenge . '/date/' . a:date
   let l:response = golf_api#HttpGet(l:endpoint)
 
@@ -168,6 +178,9 @@ function! golf_api#FetchChallengeByDate(date)
     echoerr "Failed to fetch challenge for date: " . a:date
     return {}
   endif
+
+  " Get the date from response or use requested date
+  let l:date = get(l:response, 'daily_date', a:date)
 
   " Transform API response to match expected challenge format
   let l:challenge = {
@@ -177,7 +190,7 @@ function! golf_api#FetchChallengeByDate(date)
         \ 'targetText': get(l:response, 'end_text', ''),
         \ 'par': get(l:response, 'par', 0),
         \ 'difficulty': get(l:response, 'difficulty', 'unknown'),
-        \ 'date': a:date
+        \ 'date': l:date
         \ }
 
   return l:challenge
