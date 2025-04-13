@@ -1,79 +1,97 @@
-# Golf
+# Golf Plugin
 
-A Vim plugin and server implementation for practicing and improving your Vim skills through coding challenges.
+Golf Plugin is a Vim plugin that brings a challenge-based keystroke game to your editor. Inspired by the idea of code golfing, each challenge tasks you with transforming a starting text into a target text by typing as few keystrokes as possible. Your performance is dynamically tracked and scored in real time, and upon completion, you get a detailed summary along with a leaderboard.
 
-## Project Structure
+## Table of Contents
 
-This repository consists of two main components:
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
-- `golfPlugin/`: A Vim plugin for interacting with Golf challenges directly from your editor
-- `server/`: A Node.js server implementation for hosting and managing Golf challenges
+## Features
 
-## What is Golf?
+- **Dynamic Challenges:**  
+  - Fetch daily challenges from an external API.
+  - Each challenge includes a starting text, target text, and a par value representing the optimal number of keystrokes.
 
-Golf is a game where you compete to solve text manipulation challenges in the fewest keystrokes possible using Vim. Each challenge presents you with a starting text and a target text - your goal is to transform the start text into the target text using as few keystrokes as possible.
+- **Keystroke Tracking:**  
+  - Tracks every keystroke (both normal and insert modes).
+  - Calculates your score based on how many keystrokes you use relative to the par.
 
-## Getting Started
+- **Auto-Verification:**  
+  - Automatically compares your current buffer content against the target text.
+  - Displays a success message as soon as your solution matches the target, with detailed stats.
 
-### Prerequisites
+- **Visual Feedback & Leaderboard:**  
+  - Opens a dedicated success screen with stylish formatting, syntax highlighting, and a leaderboard showing top scores.
+  - Displays a split window with the target text for easy reference during the challenge.
 
-- Vim 8.0 or higher
-- Node.js (v14 or higher) for running the server
-- MongoDB (v4.4 or higher) for the server
+## Installation
 
-### Plugin Installation
+### Using a Plugin Manager
 
-1. Clone this repository:
-```bash
-git clone https://github.com/vuciv/golf.git
+If you use [vim-plug](https://github.com/junegunn/vim-plug), add the following lines to your `~/.vimrc` or `init.vim`:
+
+```vim
+Plug 'vuciv/golf'
 ```
 
-2. Copy or symlink the plugin files to your Vim plugin directory:
-```bash
-cp -r golfPlugin/* ~/.vim/plugin/
-# or for Neovim
-cp -r golfPlugin/* ~/.config/nvim/plugin/
+Then run the command:
+```
+:PlugInstall
 ```
 
-### Server Setup
-
-1. Navigate to the server directory:
-```bash
-cd server
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create a `.env` file with your configuration:
-```env
-PORT=3000
-MONGODB_URI=mongodb://localhost/golf
-NODE_ENV=development
-```
-
-4. Start the server:
-```bash
-npm run dev  # for development
-npm start    # for production
-```
+### Manual Installation
+Copy the golf.vim file into your Vim runtime path (typically ~/.vim/plugin/).
 
 ## Usage
 
-[Coming soon - Add usage instructions for both the plugin and server]
+### Starting a Challenge
+
+**Play Today's Challenge:**
+In Vim, run:
+```
+:GolfToday
+```
+
+This command:
+- Saves your current buffer.
+- Fetches the daily challenge from the API.
+- Opens a new buffer with the challenge text and a side-by-side split showing the target text.
+- Begins tracking your keystrokes.
+
+**Keystroke Tracking & Auto-Verification:**
+Every keystroke is recorded. The plugin continuously compares your edited buffer against the target text. When your solution matches perfectly, a success screen is shown with statistics including the stroke count, time taken, and your score relative to par.
+
+**Exiting the Challenge:**
+After reviewing the success and leaderboard screen, press any key to exit, and the plugin will return you to your original file.
+
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! To contribute:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+**Fork the Repository:**
+Create your own copy to work on your changes.
+
+**Create a Feature Branch:**
+Use a descriptive branch name, for example, `feature/add-new-mapping`.
+
+**Commit Your Changes:**
+Follow the existing code style and include clear commit messages.
+
+**Submit a Pull Request:**
+Open a PR with a detailed explanation of your changes and any related issues.
+
+Please include tests or documentation updates for any new features or bug fixes.
 
 ## License
 
-MIT 
+This project is licensed under the MIT License. Feel free to use, modify, and distribute the plugin according to the terms specified in the license.
+
+Enjoy the challenge, fine-tune your keystrokes, and happy golfing!
+
+---
+Repository: [https://github.com/vuciv/golf](https://github.com/vuciv/golf)
