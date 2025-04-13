@@ -1,6 +1,12 @@
-# Golf Plugin
+# golf.vim
 
-Golf Plugin is a Vim plugin that brings a challenge-based keystroke game to your editor. Inspired by the idea of code golfing, each challenge tasks you with transforming a starting text into a target text by typing as few keystrokes as possible. Your performance is dynamically tracked and scored in real time, and upon completion, you get a detailed summary along with a leaderboard.
+
+
+https://github.com/user-attachments/assets/5acb129d-fcca-46ce-9ea8-f9ae6a03159e
+
+
+
+golf.vim is a Vim plugin that brings a challenge-based keystroke game to your editor. Inspired by the idea of code golfing, each challenge tasks you with transforming a starting text into a target text by typing as few keystrokes as possible. Your performance is dynamically tracked and scored in real time, and upon completion, you get a detailed summary along with a leaderboard.
 
 ## Table of Contents
 
