@@ -7,8 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         async function submitChallenge(event) {
-            event.preventDefault();
-            const form = event.target;
+            const form = document.getElementById('challenge-form');
+            const submitButton = document.getElementById('submit-button');
+            const feedbackDiv = document.getElementById('feedback');
+            
+            // Disable button while submitting
+            submitButton.disabled = true;
+            submitButton.innerHTML = '⏳ Submitting...';
+            
             const data = {
                 title: form.title.value,
                 description: form.description.value,
@@ -30,16 +36,77 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    window.location.href = `/challenges.html?success=true&id=${result.id}`;
+                    feedbackDiv.innerHTML = `
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-green-800">Challenge Submitted Successfully! 🎉</h3>
+                                    <div class="mt-2 text-sm text-green-700">
+                                        <p>Your challenge has been submitted and will be reviewed by our Vim masters. Thank you for contributing!</p>
+                                        <p class="mt-2">Challenge ID: ${result.id}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    form.reset();
                 } else {
                     const error = await response.json();
-                    alert(`Error: ${error.message || error.error || 'Failed to submit challenge'}`);
+                    feedbackDiv.innerHTML = `
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Submission Failed</h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <p>${error.message || error.error || 'Failed to submit challenge'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Error submitting challenge:', error);
-                alert('Error submitting challenge. Please try again.');
+                feedbackDiv.innerHTML = `
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">Submission Failed</h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    <p>An error occurred while submitting your challenge. Please try again.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } finally {
+                // Re-enable button after submission
+                submitButton.disabled = false;
+                submitButton.innerHTML = '🚀 Submit Your Vim Challenge';
+                
+                // Scroll feedback into view
+                feedbackDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('submit-button').addEventListener('click', submitChallenge);
+        });
     </script>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen py-12">
@@ -48,6 +115,9 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-4">⛳️ golf.vim ⌨️</h1>
             <p class="text-gray-600 max-w-2xl mx-auto">Ready to test your fellow Vimmers? Create a challenge where every keystroke counts! Can they match your score in Normal mode? 🎯</p>
         </header>
+
+        <!-- Feedback Message Area -->
+        <div id="feedback" class="mb-8"></div>
 
         <!-- Review Process Notice -->
         <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-lg">
@@ -73,7 +143,7 @@
             </div>
         </div>
         
-        <form onsubmit="submitChallenge(event)" method="POST" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 space-y-6">
+        <form id="challenge-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4 space-y-6">
             <div>
                 <label for="title" class="block text-gray-700 font-bold mb-2">🎯 Challenge Title</label>
                 <input type="text" id="title" name="title" required
@@ -133,7 +203,7 @@
             </div>
 
             <div class="flex items-center justify-center pt-4">
-                <button type="submit"
+                <button id="submit-button" type="button"
                     class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors">
                     🚀 Submit Your Vim Challenge
                 </button>

@@ -286,6 +286,7 @@ function! golf#ShowSuccess() abort
   call add(l:lines, printf('║  Time: %d minutes %d seconds', l:minutes, l:seconds))
   call add(l:lines, '║')
   call add(l:lines, '║  Great job! Your solution matches the target perfectly! 🎯')
+  call add(l:lines, '║  Like golf.vim? Follow @joshycodes on X for updates & dev logs ⚡')
   call add(l:lines, '║')
   call add(l:lines, '╠═══════════════════════════════════════════════════════════════╣')
   call add(l:lines, '║                        LEADERBOARD 🏆                          ║')
