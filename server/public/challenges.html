@@ -5,13 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VimGolf Challenges</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Style for the modal backdrop */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50; /* Ensure it's above other content */
+        }
+        .modal-content {
+            max-height: 80vh; /* Limit modal height */
+            overflow-y: auto; /* Enable scrolling if content overflows */
+        }
+    </style>
     <script>
         let challenges = [];
         let filteredChallenges = [];
+        let currentLeaderboard = [];
 
         async function fetchChallenges() {
             try {
                 const response = await fetch('/v1/challenges/all');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 challenges = await response.json();
                 filteredChallenges = [...challenges];
                 renderChallenges();
@@ -19,7 +40,7 @@
                 console.error('Error fetching challenges:', error);
                 document.getElementById('challenges-list').innerHTML = `
                     <div class="text-center text-red-600 py-8">
-                        Failed to load challenges. Please try again later.
+                        Failed to load challenges. Please try again later. Error: ${error.message}
                     </div>
                 `;
             }
@@ -56,20 +77,29 @@
             }
 
             list.innerHTML = filteredChallenges.map(challenge => `
-                <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-bold text-gray-800">${challenge.title}</h3>
-                        <span class="px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(challenge.difficulty)}">
-                            ${challenge.difficulty}
-                        </span>
-                    </div>
-                    <p class="text-gray-600 mb-4">${challenge.description}</p>
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        ${(challenge.tags || []).map(tag => `
-                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm">
-                                ${tag}
+                <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">${challenge.title}</h3>
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold ${getDifficultyColor(challenge.difficulty)}">
+                                ${challenge.difficulty}
                             </span>
-                        `).join('')}
+                        </div>
+                        <p class="text-gray-600 mb-4">${challenge.description}</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${(challenge.tags || []).map(tag => `
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm">
+                                    ${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="mt-auto pt-4 border-t border-gray-200 flex justify-end">
+                        <button 
+                            onclick="showLeaderboardModal('${challenge._id}', '${escape(challenge.title)}')" 
+                            class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-200 transition-colors">
+                            View Leaderboard
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -87,6 +117,89 @@
         function tryChallenge(id) {
             // This would link to your challenge solving interface
             alert('Challenge interface not implemented yet');
+        }
+
+        async function fetchLeaderboard(challengeId) {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            const leaderboardTitle = document.getElementById('leaderboard-title');
+            leaderboardList.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                    <p class="text-gray-600 mt-2">Loading leaderboard...</p>
+                </div>`; // Show loading state
+
+            try {
+                const response = await fetch(`/v1/solutions/leaderboard/${challengeId}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                currentLeaderboard = await response.json();
+                renderLeaderboard(currentLeaderboard, unescape(leaderboardTitle.dataset.challengeTitle));
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+                leaderboardList.innerHTML = `
+                    <div class="text-center text-red-600 py-4">
+                        Failed to load leaderboard. ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function renderLeaderboard(leaderboardData, challengeTitle) {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            const leaderboardTitleEl = document.getElementById('leaderboard-title');
+            leaderboardTitleEl.textContent = `Leaderboard: ${challengeTitle}`;
+            leaderboardTitleEl.dataset.challengeTitle = challengeTitle; // Store title for potential reuse
+
+            if (!leaderboardData || leaderboardData.length === 0) {
+                leaderboardList.innerHTML = `
+                    <div class="text-center text-gray-600 py-4">
+                        No scores submitted yet for this challenge.
+                    </div>
+                `;
+                return;
+            }
+
+            leaderboardList.innerHTML = `
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keystrokes</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time (s)</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        ${leaderboardData.map((entry, index) => `
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${entry.user_id || 'Anonymous'}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${entry.keystrokes}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${entry.time_taken.toFixed(2)}</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${new Date(entry.submitted_at).toLocaleDateString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function showLeaderboardModal(challengeId, challengeTitle) {
+            const modal = document.getElementById('leaderboard-modal');
+            const leaderboardTitle = document.getElementById('leaderboard-title');
+            leaderboardTitle.dataset.challengeTitle = challengeTitle; // Store title before fetch
+            modal.classList.remove('hidden');
+            fetchLeaderboard(challengeId);
+        }
+
+        function closeLeaderboardModal() {
+            const modal = document.getElementById('leaderboard-modal');
+            modal.classList.add('hidden');
+            // Clear content when closing
+            document.getElementById('leaderboard-list').innerHTML = '';
+            document.getElementById('leaderboard-title').textContent = 'Leaderboard';
+            document.getElementById('leaderboard-title').removeAttribute('data-challenge-title');
+            currentLeaderboard = [];
         }
 
         // Initialize the page
@@ -149,6 +262,21 @@
             <a href="/guidelines.html" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-gray-200 transition-colors">
                 Submission Guidelines
             </a>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal" class="modal-backdrop hidden" onclick="closeLeaderboardModal()"> 
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 p-6" onclick="event.stopPropagation()"> 
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h2 id="leaderboard-title" class="text-2xl font-semibold text-gray-800">Leaderboard</h2>
+                <button onclick="closeLeaderboardModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="leaderboard-list">
+                <!-- Leaderboard content will be loaded here -->
+            </div>
         </div>
     </div>
 </body>
