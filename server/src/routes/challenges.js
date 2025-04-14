@@ -42,15 +42,12 @@ router.get('/daily', async (req, res) => {
         return res.status(404).json({ error: 'No challenges available' });
       }
 
-      // Clone the challenge and set it as daily
-      dailyChallenge = new Challenge({
-        ...randomChallenge.toObject(),
-        _id: undefined,
-        is_daily: true,
-        is_approved: true, // Daily challenges are automatically approved
-        daily_date: today
-      });
-      await dailyChallenge.save();
+      // Update the found challenge to make it today's daily challenge
+      randomChallenge.is_daily = true;
+      randomChallenge.daily_date = today;
+      // The challenge is already approved, so no need to change is_approved
+      await randomChallenge.save();
+      dailyChallenge = randomChallenge; // Use the updated challenge
     }
 
     // Format date as YYYY-MM-DD in UTC
