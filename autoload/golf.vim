@@ -117,7 +117,7 @@ endfunction
 " Keystroke Tracking Functions
 "========================================================================
 
-" Start tracking keystrokes and set up key mappings for both normal and insert modes
+" Start tracking keystrokes and set up key mappings for various modes
 function! golf#StartTracking() abort
   let s:golf_keystrokes = []
   let s:golf_start_time = localtime()
@@ -127,20 +127,18 @@ function! golf#StartTracking() abort
   let b:golf_success_shown = 0
   call golf#ClearSuccessHighlight()
 
-  " Set up mappings for printable characters in Normal mode (33-126)
+  " Set up mappings for printable characters (33-126)
   for i in range(33, 126)
-    execute "nnoremap <expr> <char-" . i . "> <SID>KeyStrokeTracker('<char-" . i . ">')"
+    "   noremap  = Normal, Visual, Select, and Operator-pending modes
+    "   noremap! = Insert and Command-line modes
+    execute "noremap <buffer> <expr> <char-" . i . "> <SID>KeyStrokeTracker('<char-" . i . ">')"
+    execute "noremap! <buffer> <expr> <char-" . i . "> <SID>KeyStrokeTracker('<char-" . i . ">')"
   endfor
 
-  " Set up mappings for printable characters in Insert mode (32-126)
-  for i in range(32, 126)
-    execute "inoremap <expr> <char-" . i . "> <SID>KeyStrokeTracker('<char-" . i . ">')"
-  endfor
-
-  " Set up mappings for special keys in both modes
+  " Set up mappings for special keys
   for key in ['<Space>', '<CR>', '<Esc>', '<BS>', '<Tab>', '<Left>', '<Right>', '<Up>', '<Down>']
-    execute "nnoremap <expr> " . key . " <SID>KeyStrokeTracker('" . key . "')"
-    execute "inoremap <expr> " . key . " <SID>KeyStrokeTracker('" . key . "')"
+    execute "noremap <buffer> <expr> " . key . " <SID>KeyStrokeTracker('" . key . "')"
+    execute "noremap! <buffer> <expr> " . key . " <SID>KeyStrokeTracker('" . key . "')"
   endfor
 
   " Create autocommands for auto-verification on any text change
@@ -167,7 +165,9 @@ endfunction
 " Add a keystroke event to the tracker
 function! golf#RecordKeystroke(key) abort
   if s:golf_tracking
-    call add(s:golf_keystrokes, {'key': a:key})
+    " Escape backslashes and transform special keys to string representation
+    " e.g. #13 becomes <CR>
+    call add(s:golf_keystrokes, {'key': escape(keytrans(a:key), '\\')})
   endif
 endfunction
 
@@ -175,20 +175,16 @@ endfunction
 function! golf#StopTracking() abort
   let s:golf_tracking = 0
 
-  " Remove mappings in Normal mode (33-126)
+  " Remove mappings for printable characters (33-126)
   for i in range(33, 126)
-    execute "nunmap <char-" . i . ">"
-  endfor
-
-  " Remove mappings in Insert mode (32-126)
-  for i in range(32, 126)
-    execute "iunmap <char-" . i . ">"
+    execute "unmap <buffer> <char-" . i . ">"
+    execute "unmap! <buffer> <char-" . i . ">"
   endfor
 
   " Remove mappings for special keys
   for key in ['<Space>', '<CR>', '<Esc>', '<BS>', '<Tab>', '<Left>', '<Right>', '<Up>', '<Down>']
-    execute "nunmap " . key
-    execute "iunmap " . key
+    execute "unmap <buffer> " . key
+    execute "unmap! <buffer> " . key
   endfor
 
   " Clear autocommands
