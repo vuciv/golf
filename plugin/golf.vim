@@ -39,4 +39,5 @@ command! -nargs=0 GolfToday call golf#PlayToday()
 "   :Golf <difficulty>" Play random challenge (easy/medium/hard)
 "   :Golf tag <tag>   " Play random challenge by tag
 "   :Golf date <YYYY-MM-DD> " Play challenge for a specific date
+"   :Golf id <id>     " Play challenge with the specified ID
 command! -nargs=* Golf call golf#DispatchGolfCommand(<f-args>) 

@@ -507,6 +507,18 @@ function! golf#ShowTargetText() abort
   syncbind
 endfunction
 
+" Play a challenge by its ID
+function! golf#PlayChallengeById(id) abort
+  let s:golf_original_buffer = bufnr('%')
+  echo "Fetching challenge with ID: " . a:id . "..."
+  let l:challenge = golf_api#FetchChallenge(a:id)
+  if empty(l:challenge) || empty(get(l:challenge, 'id', '')) || empty(get(l:challenge, 'targetText', ''))
+    echoerr "Failed to fetch challenge with ID: " . a:id . "."
+    return
+  endif
+  call golf#PlayChallenge(l:challenge)
+endfunction
+
 " Dispatcher for the :Golf command based on arguments
 function! golf#DispatchGolfCommand(...) abort
   let l:argc = a:0
@@ -519,7 +531,7 @@ function! golf#DispatchGolfCommand(...) abort
     if l:arg1 == 'easy' || l:arg1 == 'medium' || l:arg1 == 'hard'
       call golf#PlayChallengeByDifficulty(l:arg1)
     else
-      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'tag <tag>', or 'date <YYYY-MM-DD>'."
+      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'tag <tag>', 'date <YYYY-MM-DD>', or 'id <id>'."
     endif
   elseif l:argc == 2
     let l:arg1 = tolower(a:1)
@@ -534,11 +546,14 @@ function! golf#DispatchGolfCommand(...) abort
       else
         echoerr "Invalid date format: " . l:arg2 . ". Use YYYY-MM-DD format."
       endif
+    elseif l:arg1 == 'id'
+      " :Golf id <id>
+      call golf#PlayChallengeById(l:arg2)
     else
-      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', or ':Golf date <YYYY-MM-DD>'."
+      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', or ':Golf id <id>'."
     endif
   else
-    echoerr "Too many arguments. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', or ':Golf date <YYYY-MM-DD>'."
+    echoerr "Too many arguments. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', or ':Golf id <id>'."
   endif
 endfunction
 
