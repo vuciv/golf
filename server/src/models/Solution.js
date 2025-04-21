@@ -1,41 +1,46 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const solutionSchema = new mongoose.Schema({
   challenge: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Challenge',
-    required: true
+    ref: "Challenge",
+    required: true,
   },
   keystrokes: {
     type: Number,
     required: true,
-    min: 1
+    min: 1,
   },
-  keylog: [{
-    key: String,
-    timestamp: Date
-  }],
+  keylog: [
+    {
+      key: String,
+      timestamp: {
+        type: Date,
+        required: false,
+      },
+    },
+  ],
   time_taken: {
     type: Number, // in seconds
-    required: true
+    required: true,
   },
   score: {
     type: Number,
-    required: true
+    required: true,
   },
   submitted_at: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   user_id: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 // Index for faster leaderboard queries
 solutionSchema.index({ challenge: 1, keystrokes: 1 });
 
-const Solution = mongoose.model('Solution', solutionSchema);
+const Solution = mongoose.model("Solution", solutionSchema);
 
-module.exports = Solution; 
+module.exports = Solution;
