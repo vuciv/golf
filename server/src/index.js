@@ -8,7 +8,6 @@ require("dotenv").config();
 
 const challengesRouter = require("./routes/challenges");
 const solutionsRouter = require("./routes/solutions");
-const { cleanupInvalidSolutions } = require("./utils/cleanup");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -46,24 +45,7 @@ app.use((err, req, res, next) => {
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost/vimgolf")
-  .then(() => {
-    console.log("Connected to MongoDB");
-
-    // Run cleanup tasks after successful database connection
-    cleanupInvalidSolutions()
-      .then((count) => {
-        if (count > 0) {
-          console.log(
-            `Server startup: Removed ${count} invalid solutions with less than 5 keystrokes`
-          );
-        } else {
-          console.log("Server startup: No invalid solutions found");
-        }
-      })
-      .catch((err) =>
-        console.error("Failed to clean up invalid solutions:", err)
-      );
-  })
+  .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Start server
