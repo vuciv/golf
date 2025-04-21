@@ -117,51 +117,98 @@ endfunction
 " Keystroke Tracking Functions
 "========================================================================
 
-" Start tracking keystrokes and set up key mappings for both normal and insert modes
 function! golf#StartTracking() abort
-  let s:golf_keystrokes = []
-  let s:golf_start_time = localtime()
-  let s:golf_tracking   = 1
-
-  " Reset success state on (re)start of tracking
+  let s:golf_keystrokes    = []
+  let s:golf_start_time    = localtime()
+  let s:golf_tracking      = 1
   let b:golf_success_shown = 0
   call golf#ClearSuccessHighlight()
 
-  " Set up mappings for printable characters in Normal mode (33-126)
-  for i in range(33, 126)
-    execute "nnoremap <expr> <char-" . i . "> <SID>KeyStrokeTracker('<char-" . i . ">')"
-  endfor
-
-  " Set up mappings for printable characters in Insert mode (32-126)
-  for i in range(32, 126)
-    execute "inoremap <expr> <char-" . i . "> <SID>KeyStrokeTracker('<char-" . i . ">')"
-  endfor
-
-  " Set up mappings for special keys in both modes
-  for key in ['<Space>', '<CR>', '<Esc>', '<BS>', '<Tab>', '<Left>', '<Right>', '<Up>', '<Down>']
-    execute "nnoremap <expr> " . key . " <SID>KeyStrokeTracker('" . key . "')"
-    execute "inoremap <expr> " . key . " <SID>KeyStrokeTracker('" . key . "')"
-  endfor
-
-  " Create autocommands for auto-verification on any text change
-  augroup GolfModeTracking
-    autocmd!
-    autocmd TextChanged,TextChangedI * call golf#AutoVerify()
-  augroup END
-
-  " Record the initial state as START
+  " record the START event
   call golf#RecordKeystroke('START')
 
-  " Flag buffer as tracking active
-  let b:golf_tracking = 1
+  " modes → mapping commands (now includes command-line 'c')
+  let l:modes = {
+        \ 'n': 'nnoremap',
+        \ 'i': 'inoremap',
+        \ 'v': 'vnoremap',
+        \ 'x': 'xnoremap',
+        \ 'o': 'onoremap',
+        \ 's': 'snoremap',
+        \ 'c': 'cnoremap'
+        \ }
+
+  " map printable ASCII 32–126
+  for code in range(32, 126)
+    let ch  = nr2char(code)
+    let lhs = (ch ==# '|') ? '<Bar>' : ch
+    for mode in keys(l:modes)
+      let cmd = l:modes[mode]
+      execute printf(
+            \ '%s <buffer> <expr> %s golf#RecordAndReturn(%s)',
+            \ cmd, lhs, string(ch)
+            \ )
+    endfor
+  endfor
+
+  " map special keys
+  let l:specials = ['<Space>','<CR>','<Esc>','<BS>','<Tab>',
+        \ '<Left>','<Right>','<Up>','<Down>']
+  for sp in l:specials
+    for mode in keys(l:modes)
+      let cmd = l:modes[mode]
+      execute printf(
+            \ '%s <buffer> <expr> %s golf#RecordAndReturn(%s)',
+            \ cmd, sp, string(sp)
+            \ )
+    endfor
+  endfor
+
+  " auto‑verify on any change
+  augroup GolfModeTracking
+    autocmd!
+    autocmd TextChanged,TextChangedI <buffer> call golf#AutoVerify()
+  augroup END
 endfunction
 
-" Intercept and record a keystroke; called by mappings
-function! s:KeyStrokeTracker(key) abort
+" helper to record the key AND immediately refresh statusline
+function! golf#RecordAndReturn(key) abort
   if s:golf_tracking
     call golf#RecordKeystroke(a:key)
+    redrawstatus
   endif
   return a:key
+endfunction
+
+function! golf#StopTracking() abort
+  let s:golf_tracking = 0
+
+  " we just need the mode‑letters for unmapping
+  let l:modes = ['n','i','v','x','o','s','c']
+
+  " unmap printable ASCII
+  for code in range(32, 126)
+    let ch  = nr2char(code)
+    let lhs = (ch ==# '|') ? '<Bar>' : ch
+    for m in l:modes
+      execute printf('%sunmap <buffer> %s', m, lhs)
+    endfor
+  endfor
+
+  " unmap special keys
+  let l:specials = ['<Space>','<CR>','<Esc>','<BS>','<Tab>',
+        \ '<Left>','<Right>','<Up>','<Down>']
+  for sp in l:specials
+    for m in l:modes
+      execute printf('%sunmap <buffer> %s', m, sp)
+    endfor
+  endfor
+
+  augroup GolfModeTracking
+    autocmd!
+  augroup END
+
+  echo "Golf tracking stopped."
 endfunction
 
 " Add a keystroke event to the tracker
@@ -169,39 +216,6 @@ function! golf#RecordKeystroke(key) abort
   if s:golf_tracking
     call add(s:golf_keystrokes, {'key': a:key})
   endif
-endfunction
-
-" Stop tracking keystrokes: remove mappings and autocommands, then cleanup
-function! golf#StopTracking() abort
-  let s:golf_tracking = 0
-
-  " Remove mappings in Normal mode (33-126)
-  for i in range(33, 126)
-    execute "nunmap <char-" . i . ">"
-  endfor
-
-  " Remove mappings in Insert mode (32-126)
-  for i in range(32, 126)
-    execute "iunmap <char-" . i . ">"
-  endfor
-
-  " Remove mappings for special keys
-  for key in ['<Space>', '<CR>', '<Esc>', '<BS>', '<Tab>', '<Left>', '<Right>', '<Up>', '<Down>']
-    execute "nunmap " . key
-    execute "iunmap " . key
-  endfor
-
-  " Clear autocommands
-  augroup GolfModeTracking
-    autocmd!
-  augroup END
-
-  " Remove tracking flag from buffer variable, if exists
-  if exists('b:golf_tracking')
-    unlet b:golf_tracking
-  endif
-
-  echo "Golf tracking stopped."
 endfunction
 
 "========================================================================
@@ -252,7 +266,7 @@ function! golf#ShowSuccess() abort
   if l:score.value <= -2
     let l:emoji = '🦅'
   elseif l:score.value == -1
-    let l:emoji = '🐦'
+    let l:emoji = '��'
   elseif l:score.value >= 3
     let l:emoji = '😖'
   elseif l:score.value >= 2
