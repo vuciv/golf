@@ -530,8 +530,11 @@ function! golf#DispatchGolfCommand(...) abort
     let l:arg1 = tolower(a:1)
     if l:arg1 == 'easy' || l:arg1 == 'medium' || l:arg1 == 'hard'
       call golf#PlayChallengeByDifficulty(l:arg1)
+    elseif l:arg1 == 'leaderboard'
+      " :Golf leaderboard -> Show today's leaderboard
+      call golf#ShowTodaysLeaderboard()
     else
-      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'tag <tag>', 'date <YYYY-MM-DD>', or 'id <id>'."
+      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'leaderboard', 'tag <tag>', 'date <YYYY-MM-DD>', or 'id <id>'."
     endif
   elseif l:argc == 2
     let l:arg1 = tolower(a:1)
@@ -549,11 +552,45 @@ function! golf#DispatchGolfCommand(...) abort
     elseif l:arg1 == 'id'
       " :Golf id <id>
       call golf#PlayChallengeById(l:arg2)
+    elseif l:arg1 == 'leaderboard' && tolower(l:arg2) == 'date'
+      " Prompt for date when just :Golf leaderboard date is entered
+      let l:date = input('Enter date (YYYY-MM-DD): ')
+      if l:date =~ '^\d\{4}-\d\{2}-\d\{2}$'
+        call golf#ShowLeaderboardByDate(l:date)
+      else
+        echoerr "Invalid date format: " . l:date . ". Use YYYY-MM-DD format."
+      endif
+    elseif l:arg1 == 'leaderboard' && tolower(l:arg2) == 'id'
+      " Prompt for ID when just :Golf leaderboard id is entered
+      let l:id = input('Enter challenge ID: ')
+      if !empty(l:id)
+        call golf#ShowLeaderboardById(l:id)
+      else
+        echoerr "Challenge ID cannot be empty."
+      endif
     else
-      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', or ':Golf id <id>'."
+      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf leaderboard', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', ':Golf id <id>', ':Golf leaderboard date <YYYY-MM-DD>', or ':Golf leaderboard id <id>'."
+    endif
+  elseif l:argc == 3
+    let l:arg1 = tolower(a:1)
+    let l:arg2 = tolower(a:2)
+    let l:arg3 = a:3
+    
+    if l:arg1 == 'leaderboard' && l:arg2 == 'date'
+      " :Golf leaderboard date <YYYY-MM-DD>
+      if l:arg3 =~ '^\d\{4}-\d\{2}-\d\{2}$'
+        call golf#ShowLeaderboardByDate(l:arg3)
+      else
+        echoerr "Invalid date format: " . l:arg3 . ". Use YYYY-MM-DD format."
+      endif
+    elseif l:arg1 == 'leaderboard' && l:arg2 == 'id'
+      " :Golf leaderboard id <id>
+      call golf#ShowLeaderboardById(l:arg3)
+    else
+      echoerr "Invalid command structure. Check the documentation for valid commands."
     endif
   else
-    echoerr "Too many arguments. Use ':Golf', ':Golf <difficulty>', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', or ':Golf id <id>'."
+    echoerr "Too many arguments. Use ':Golf', ':Golf <difficulty>', ':Golf leaderboard', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', ':Golf id <id>', ':Golf leaderboard date <YYYY-MM-DD>', or ':Golf leaderboard id <id>'."
   endif
 endfunction
 
@@ -591,4 +628,145 @@ function! golf#PlayChallengeByDate(date) abort
     return
   endif
   call golf#PlayChallenge(l:challenge)
+endfunction
+
+"========================================================================
+" Leaderboard Functions
+"========================================================================
+
+" Display leaderboard for a challenge
+function! golf#DisplayLeaderboard(leaderboard, challenge_name) abort
+  " Create a new scratch buffer for the leaderboard
+  enew
+  setlocal buftype=nofile bufhidden=wipe noswapfile nonumber norelativenumber
+  setlocal signcolumn=no nocursorline nocursorcolumn
+  execute 'file Golf:Leaderboard'
+
+  " Build the leaderboard display
+  let l:lines = []
+  call add(l:lines, '╔═══════════════════════════════════════════════════════════════╗')
+  call add(l:lines, '║                        LEADERBOARD 🏆                          ║')
+  
+  if !empty(a:challenge_name)
+    call add(l:lines, '╠═══════════════════════════════════════════════════════════════╣')
+    call add(l:lines, '║  Challenge: ' . a:challenge_name)
+  endif
+  
+  call add(l:lines, '╠═══════════════════════════════════════════════════════════════╣')
+  
+  " Add leaderboard entries
+  if !empty(a:leaderboard)
+    let l:rank = 1
+    for entry in a:leaderboard
+      let l:entry_time    = entry.time_taken
+      let l:entry_minutes = l:entry_time / 60
+      let l:entry_seconds = l:entry_time % 60
+      call add(l:lines, printf('║  %d. %s - %d strokes (%dm %ds)', 
+            \ l:rank, entry.user_id, entry.keystrokes, l:entry_minutes, l:entry_seconds))
+      if has_key(entry, 'keylog') && !empty(entry.keylog)
+        let l:keystrokes = []
+        for k in entry.keylog
+          if k.key ==# '<Space>'
+            call add(l:keystrokes, '␣')
+          elseif k.key ==# '<CR>'
+            call add(l:keystrokes, '⏎')
+          elseif k.key ==# '<Esc>'
+            call add(l:keystrokes, '⎋')
+          elseif k.key ==# '<BS>'
+            call add(l:keystrokes, '⌫')
+          elseif k.key ==# '<Tab>'
+            call add(l:keystrokes, '⇥')
+          elseif k.key ==# '<Left>'
+            call add(l:keystrokes, '←')
+          elseif k.key ==# '<Right>'
+            call add(l:keystrokes, '→')
+          elseif k.key ==# '<Up>'
+            call add(l:keystrokes, '↑')
+          elseif k.key ==# '<Down>'
+            call add(l:keystrokes, '↓')
+          else
+            call add(l:keystrokes, k.key)
+          endif
+        endfor
+
+        " Wrap the formatted keystrokes to a maximum width
+        let l:keystroke_str = join(l:keystrokes, '')
+        let l:max_width = 50
+        while len(l:keystroke_str) > 0
+          let l:line_part = strpart(l:keystroke_str, 0, l:max_width)
+          let l:keystroke_str = strpart(l:keystroke_str, l:max_width)
+          call add(l:lines, printf('║    %s%s', l:line_part, repeat(' ', l:max_width - len(l:line_part))))
+        endwhile
+      else
+        call add(l:lines, '║    (Keystrokes not available)')
+      endif
+      if l:rank < len(a:leaderboard)
+        call add(l:lines, '╟───────────────────────────────────────────────────────────────╢')
+      endif
+      let l:rank += 1
+    endfor
+  else
+    call add(l:lines, '║  No entries yet for this challenge!')
+  endif
+  
+  call add(l:lines, '║')
+  call add(l:lines, '║  Press any key to exit...                                      ║')
+  call add(l:lines, '╚═══════════════════════════════════════════════════════════════╝')
+
+  " Display the leaderboard in the buffer
+  call setline(1, l:lines)
+  syntax match GolfLeaderboardHeader /^║.*LEADERBOARD.*║$/
+  syntax match GolfLeaderboardEntry /^║\s\+\d\+\./
+  syntax match GolfLeaderboardBorder /[║╔╗╚╝╠╣═]/
+  highlight GolfLeaderboardHeader ctermfg=magenta guifg=#FF00FF
+  highlight GolfLeaderboardEntry ctermfg=cyan guifg=#00FFFF
+  highlight GolfLeaderboardBorder ctermfg=white guifg=#FFFFFF
+
+  setlocal readonly nomodifiable
+  normal! gg
+  redrawstatus!
+
+  " Allow modifications temporarily to capture key input
+  setlocal modifiable
+  echo "Press any key to exit..."
+  call getchar()
+
+  " Close the buffer
+  bwipeout!
+endfunction
+
+" Show today's leaderboard
+function! golf#ShowTodaysLeaderboard() abort
+  echo "Fetching today's leaderboard..."
+  let l:today_challenge = golf_api#FetchDailyChallenge()
+  if empty(l:today_challenge) || empty(get(l:today_challenge, 'id', ''))
+    echoerr "Failed to fetch today's challenge."
+    return
+  endif
+  
+  let l:leaderboard = golf_api#FetchLeaderboard(l:today_challenge.id)
+  call golf#DisplayLeaderboard(l:leaderboard, l:today_challenge.name)
+endfunction
+
+" Show leaderboard for a specific date
+function! golf#ShowLeaderboardByDate(date) abort
+  echo "Fetching leaderboard for date: " . a:date . "..."
+  let l:challenge = golf_api#FetchChallengeByDate(a:date)
+  if empty(l:challenge) || empty(get(l:challenge, 'id', ''))
+    echoerr "Failed to fetch challenge for date: " . a:date . "."
+    return
+  endif
+  
+  let l:leaderboard = golf_api#FetchLeaderboard(l:challenge.id)
+  call golf#DisplayLeaderboard(l:leaderboard, l:challenge.name)
+endfunction
+
+" Show leaderboard for a specific challenge ID
+function! golf#ShowLeaderboardById(id) abort
+  echo "Fetching leaderboard for challenge ID: " . a:id . "..."
+  let l:challenge = golf_api#FetchChallenge(a:id)
+  let l:challenge_name = empty(l:challenge) ? "Challenge #" . a:id : l:challenge.name
+  
+  let l:leaderboard = golf_api#FetchLeaderboard(a:id)
+  call golf#DisplayLeaderboard(l:leaderboard, l:challenge_name)
 endfunction
