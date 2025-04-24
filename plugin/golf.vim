@@ -31,7 +31,11 @@ endfunction
 call s:EnsureDirectories()
 
 " Command to play today's Golf challenge
-command! -nargs=0 GolfToday call golf#PlayToday()
+command! -nargs=0 GolfToday 
+      \ echohl WarningMsg |
+      \ echo "Notice: GolfToday is deprecated and will be removed in a future version. Please use 'Golf today' instead." |
+      \ echohl None |
+      \ call golf#PlayToday()
 
 " Command to play a specific or random Golf challenge
 " Usage:

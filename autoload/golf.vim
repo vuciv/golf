@@ -533,8 +533,14 @@ function! golf#DispatchGolfCommand(...) abort
     elseif l:arg1 == 'leaderboard'
       " :Golf leaderboard -> Show today's leaderboard
       call golf#ShowTodaysLeaderboard()
+    elseif l:arg1 == 'today'
+      " :Golf today -> Play today's challenge
+      call golf#PlayToday()
+    elseif l:arg1 == 'help'
+      " :Golf help -> Show available commands
+      call golf#ShowHelp()
     else
-      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'leaderboard', 'tag <tag>', 'date <YYYY-MM-DD>', or 'id <id>'."
+      echoerr "Invalid argument: " . a:1 . ". Use 'easy', 'medium', 'hard', 'today', 'leaderboard', 'tag <tag>', 'date <YYYY-MM-DD>', 'id <id>', or 'help'."
     endif
   elseif l:argc == 2
     let l:arg1 = tolower(a:1)
@@ -569,7 +575,7 @@ function! golf#DispatchGolfCommand(...) abort
         echoerr "Challenge ID cannot be empty."
       endif
     else
-      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf leaderboard', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', ':Golf id <id>', ':Golf leaderboard date <YYYY-MM-DD>', or ':Golf leaderboard id <id>'."
+      echoerr "Invalid command structure. Use ':Golf', ':Golf <difficulty>', ':Golf today', ':Golf leaderboard', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', ':Golf id <id>', ':Golf leaderboard date <YYYY-MM-DD>', ':Golf leaderboard id <id>', or ':Golf help'."
     endif
   elseif l:argc == 3
     let l:arg1 = tolower(a:1)
@@ -590,7 +596,7 @@ function! golf#DispatchGolfCommand(...) abort
       echoerr "Invalid command structure. Check the documentation for valid commands."
     endif
   else
-    echoerr "Too many arguments. Use ':Golf', ':Golf <difficulty>', ':Golf leaderboard', ':Golf tag <tag>', ':Golf date <YYYY-MM-DD>', ':Golf id <id>', ':Golf leaderboard date <YYYY-MM-DD>', or ':Golf leaderboard id <id>'."
+    echoerr "Too many arguments. Use ':Golf help' to see available commands."
   endif
 endfunction
 
@@ -769,4 +775,61 @@ function! golf#ShowLeaderboardById(id) abort
   
   let l:leaderboard = golf_api#FetchLeaderboard(a:id)
   call golf#DisplayLeaderboard(l:leaderboard, l:challenge_name)
+endfunction
+
+" Show help information with available commands
+function! golf#ShowHelp() abort
+  " Create a new buffer for the help information
+  enew
+  setlocal buftype=nofile bufhidden=wipe noswapfile nonumber norelativenumber
+  setlocal signcolumn=no nocursorline nocursorcolumn
+  execute 'file Golf:Help'
+
+  " Build the help content
+  let l:lines = []
+  call add(l:lines, '╔═══════════════════════════════════════════════════════════════╗')
+  call add(l:lines, '║                        GOLF.VIM HELP                          ║')
+  call add(l:lines, '╠═══════════════════════════════════════════════════════════════╣')
+  call add(l:lines, '║  PLAYING CHALLENGES:                                          ║')
+  call add(l:lines, '║    :Golf today                 - Play today''s challenge       ║')
+  call add(l:lines, '║    :Golf                       - Play random challenge        ║')
+  call add(l:lines, '║    :Golf easy                  - Play random easy challenge   ║')
+  call add(l:lines, '║    :Golf medium                - Play random medium challenge ║')
+  call add(l:lines, '║    :Golf hard                  - Play random hard challenge   ║')
+  call add(l:lines, '║    :Golf tag <tag>             - Play challenge with tag      ║')
+  call add(l:lines, '║    :Golf date <YYYY-MM-DD>     - Play challenge from date     ║')
+  call add(l:lines, '║    :Golf id <id>               - Play challenge by ID         ║')
+  call add(l:lines, '║                                                               ║')
+  call add(l:lines, '║  VIEWING LEADERBOARDS:                                        ║')
+  call add(l:lines, '║    :Golf leaderboard           - Today''s leaderboard         ║')
+  call add(l:lines, '║    :Golf leaderboard date <YYYY-MM-DD>                        ║')
+  call add(l:lines, '║    :Golf leaderboard id <id>                                  ║')
+  call add(l:lines, '║                                                               ║')
+  call add(l:lines, '║  HELP:                                                        ║')
+  call add(l:lines, '║    :Golf help                  - Show this help information   ║')
+  call add(l:lines, '║                                                               ║')
+  call add(l:lines, '║  Note: The legacy command :GolfToday is still supported       ║')
+  call add(l:lines, '║  but will be deprecated in a future version.                  ║')
+  call add(l:lines, '╚═══════════════════════════════════════════════════════════════╝')
+
+  " Display the help content in the buffer
+  call setline(1, l:lines)
+  syntax match GolfHelpHeader /^║.*GOLF.VIM HELP.*║$/
+  syntax match GolfHelpSection /^║\s\+[A-Z].*:$/
+  syntax match GolfHelpCommand /^║\s\+:[A-Za-z]\+/
+  syntax match GolfHelpBorder /[║╔╗╚╝╠╣═]/
+  highlight GolfHelpHeader ctermfg=yellow guifg=#FFD700
+  highlight GolfHelpSection ctermfg=green guifg=#00FF00
+  highlight GolfHelpCommand ctermfg=cyan guifg=#00FFFF
+  highlight GolfHelpBorder ctermfg=white guifg=#FFFFFF
+
+  setlocal readonly nomodifiable
+  normal! gg
+  redrawstatus!
+
+  " Allow modifications temporarily to capture key input
+  setlocal modifiable
+  echo "Press any key to exit..."
+  call getchar()
+  bwipeout!
 endfunction

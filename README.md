@@ -63,7 +63,7 @@ Copy the golf.vim file into your Vim runtime path (typically ~/.vim/plugin/).
 In Vim, run:
 
 ```
-:GolfToday
+:Golf today
 ```
 
 This command:
@@ -72,6 +72,8 @@ This command:
 - Fetches the daily challenge from the API.
 - Opens a new buffer with the challenge text and a side-by-side split showing the target text.
 - Begins tracking your keystrokes.
+
+> Note: The legacy command `:GolfToday` is still supported but will be deprecated in a future version.
 
 **Play a Random Challenge by Difficulty:**
 In Vim, run:
@@ -160,6 +162,15 @@ This shows the leaderboard for the challenge on the specified date.
 This shows the leaderboard for the challenge with the specified ID.
 
 The leaderboard displays player ranks, keystroke counts, and solution times, as well as the actual keystrokes used by top players (when available).
+
+**Getting Help:**
+To see all available commands, in Vim run:
+
+```
+:Golf help
+```
+
+This displays a help screen with all the available commands and their descriptions.
 
 **Keystroke Tracking & Auto-Verification:**
 Every keystroke is recorded. The plugin continuously compares your edited buffer against the target text. When your solution matches perfectly, a success screen is shown with statistics including the stroke count, time taken, and your score relative to par.
