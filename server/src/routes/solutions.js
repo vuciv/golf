@@ -11,6 +11,13 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ error: "Challenge not found" });
     }
 
+    if (req.body.keystrokes < 3) {
+      return res.status(500).json({
+        error:
+          "This challenge requires at least 3 keystrokes. Please update to the newest version of vim.golf.",
+      });
+    }
+
     const solution = new Solution({
       challenge: challenge._id,
       keystrokes: req.body.keystrokes,
