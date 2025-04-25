@@ -37,23 +37,29 @@ golf.vim is a Vim plugin that brings a challenge-based keystroke game to your ed
 
 ## Installation
 
-### Using a Plugin Manager
+- Plugin Managers
+  - Vim Plug:
 
-If you use [vim-plug](https://github.com/junegunn/vim-plug), add the following lines to your `~/.vimrc` or `init.vim`:
+    Add the following lines to your `~/.vimrc` or `init.vim`:
+  
+    ```vim
+    Plug 'vuciv/golf'
+    ```
+  
+    Then run the command:
+  
+    ```
+    :PlugInstall
+    ```
 
-```vim
-Plug 'vuciv/golf'
-```
+  - Lazy.nvim:
+    ```lua
+    { 'vuciv/golf' },
+    ```
 
-Then run the command:
+- Manual Installation
 
-```
-:PlugInstall
-```
-
-### Manual Installation
-
-Copy the golf.vim file into your Vim runtime path (typically ~/.vim/plugin/).
+  Copy the golf.vim file into your Vim runtime path (typically ~/.vim/plugin/).
 
 ## Usage
 
