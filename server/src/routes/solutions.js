@@ -52,4 +52,37 @@ router.get("/leaderboard/:challenge_id", async (req, res) => {
   }
 });
 
+// Get analytics metrics
+router.get("/analytics", async (req, res) => {
+  try {
+    const totalSolutions = await Solution.countDocuments();
+
+    const avgStats = await Solution.aggregate([
+      {
+        $group: {
+          _id: null, // Group all documents together
+          avgKeystrokes: { $avg: "$keystrokes" },
+          avgTimeTaken: { $avg: "$time_taken" },
+        },
+      },
+    ]);
+
+    const uniqueUsers = await Solution.distinct("user_id");
+    const uniqueUserCount = uniqueUsers.length;
+
+    const analytics = {
+      totalSolutions: totalSolutions,
+      averageKeystrokes: avgStats.length > 0 ? avgStats[0].avgKeystrokes : 0,
+      averageTimeTakenSeconds: avgStats.length > 0 ? avgStats[0].avgTimeTaken : 0,
+      uniqueSubmitters: uniqueUserCount,
+      // Add more metrics here if needed in the future
+    };
+
+    res.json(analytics);
+  } catch (err) {
+    console.error("Error fetching analytics:", err);
+    res.status(500).json({ error: "Failed to fetch analytics" });
+  }
+});
+
 module.exports = router;
