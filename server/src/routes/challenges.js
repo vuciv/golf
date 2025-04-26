@@ -215,4 +215,44 @@ router.post('/', async (req, res) => {
   }
 });
 
+
+// const challenges = [
+// ];
+
+// // --- Seeding Function ---
+// async function seedDatabase() {
+//   try {
+//     console.log('MongoDB connected successfully.');
+
+//     // Delete challenges created today
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0); // Start of today
+//     const tomorrow = new Date(today);
+//     tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+
+//     const deleteResult = await Challenge.deleteMany({
+//       created_at: {
+//         $gte: today,
+//         $lt: tomorrow
+//       }
+//     });
+//     console.log(`Deleted ${deleteResult.deletedCount} challenges created today.`);
+
+//     console.log(`Attempting to insert ${challenges.length} challenges...`);
+//     const inserted = await Challenge.insertMany(challenges, { ordered: false });
+//     console.log(`Successfully inserted ${inserted.length} challenges.`);
+//   } catch (error) {
+//     console.error('Error seeding database:', error);
+//     if (error.writeErrors) {
+//       error.writeErrors.forEach(err => console.error(`- ${err.errmsg}`));
+//     }
+//   } finally {
+//     console.log('MongoDB disconnected.');
+//   }
+// }
+
+// // --- Run the script ---
+// seedDatabase();
+
+
 module.exports = router; 
