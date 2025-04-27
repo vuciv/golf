@@ -142,17 +142,25 @@ function! golf#StartTracking() abort
         \ 'c': 'cnoremap'
         \ }
 
-  " map printable ASCII 32–126
+  " Special handling for pipe character
+  for mode in keys(l:modes)
+    let cmd = l:modes[mode]
+    execute cmd . ' <buffer> <expr> <Bar> golf#RecordAndReturn("\|")'
+  endfor
+
+  " map printable ASCII 32–126 (excluding pipe which is handled separately)
   for code in range(32, 126)
-    let ch  = nr2char(code)
-    let lhs = (ch ==# '|') ? '<Bar>' : ch
-    for mode in keys(l:modes)
-      let cmd = l:modes[mode]
-      execute printf(
-            \ '%s <buffer> <expr> %s golf#RecordAndReturn(%s)',
-            \ cmd, lhs, string(ch)
-            \ )
-    endfor
+    let ch = nr2char(code)
+    if ch !=# '|'  " Skip pipe character as it's handled above
+      let lhs = ch
+      for mode in keys(l:modes)
+        let cmd = l:modes[mode]
+        execute printf(
+              \ '%s <buffer> <expr> %s golf#RecordAndReturn(%s)',
+              \ cmd, lhs, string(ch)
+              \ )
+      endfor
+    endif
   endfor
 
   " map special keys
