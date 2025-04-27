@@ -78,6 +78,9 @@ endfunction
 
 " Start the Golf challenge using the challenge details provided
 function! golf#PlayChallenge(challenge) abort
+  " Close any existing golf buffers before starting a new challenge
+  call golf#CloseAllBuffers()
+
   " Store challenge information for later use
   let s:golf_target_text    = a:challenge.targetText
   let s:golf_par            = a:challenge.par
@@ -479,6 +482,12 @@ function! golf#ShowTargetText() abort
   if !exists('b:golf_tracking') && s:golf_target_text == ''
     echo "No active Golf challenge. Start one with :GolfToday"
     return
+  endif
+
+  " Check if Golf:Target buffer already exists and close it if it does
+  let l:target_buffer = bufnr('Golf:Target')
+  if l:target_buffer != -1
+    execute 'bwipeout! ' . l:target_buffer
   endif
 
   let l:current_buffer = bufnr('%')
