@@ -111,6 +111,7 @@ function! golf#PlayChallenge(challenge) abort
   if l:challenge_win != -1
     execute l:challenge_win . "wincmd w"
   endif
+  normal! gg
 endfunction
 
 "========================================================================
