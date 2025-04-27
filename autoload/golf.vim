@@ -88,9 +88,9 @@ function! golf#PlayChallenge(challenge) abort
   let s:golf_challenge_name = a:challenge.name
 
   " Create a new buffer for the challenge
-  enew
+  silent enew
   setlocal buftype=nofile bufhidden=hide noswapfile
-  execute 'file Golf:' . a:challenge.id
+  silent execute 'file Golf:' . a:challenge.id
 
   " Clear buffer and insert starting text
   normal! ggdG
@@ -466,10 +466,10 @@ endfunction
 function! golf#CloseAllBuffers() abort
   let l:buffers = filter(range(1, bufnr('$')), 'bufexists(v:val) && bufname(v:val) =~# "^Golf:"')
   for l:buf in l:buffers
-    execute 'bwipeout! ' . l:buf
+    silent execute 'bwipeout! ' . l:buf
   endfor
   if bufexists(s:golf_original_buffer)
-    execute 'buffer ' . s:golf_original_buffer
+    silent execute 'buffer ' . s:golf_original_buffer
   endif
 endfunction
 
@@ -487,13 +487,13 @@ function! golf#ShowTargetText() abort
   " Check if Golf:Target buffer already exists and close it if it does
   let l:target_buffer = bufnr('Golf:Target')
   if l:target_buffer != -1
-    execute 'bwipeout! ' . l:target_buffer
+    silent execute 'bwipeout! ' . l:target_buffer
   endif
 
   let l:current_buffer = bufnr('%')
-  vnew
+  silent vnew
   setlocal buftype=nofile bufhidden=hide noswapfile
-  execute 'file Golf:Target'
+  silent execute 'file Golf:Target'
   call setline(1, "TARGET TEXT - GOAL")
   call append(1, split(s:golf_target_text, "\n"))
 
