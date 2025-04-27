@@ -226,7 +226,37 @@ endfunction
 " Add a keystroke event to the tracker
 function! golf#RecordKeystroke(key) abort
   if s:golf_tracking
-    call add(s:golf_keystrokes, {'key': a:key})
+    " Comprehensive sanitization for all keys
+    let l:sanitized_key = a:key
+    
+    " Handle special keys with standard notation
+    if a:key =~# '^\\\?' || len(a:key) > 1
+      " Convert special keys to their angle bracket notation if needed
+      let l:key_map = {
+            \ "\<BS>": '<BS>', '<BS>': '<BS>',
+            \ "\<Tab>": '<Tab>', '<Tab>': '<Tab>',
+            \ "\<CR>": '<CR>', '<CR>': '<CR>',
+            \ "\<Esc>": '<Esc>', '<Esc>': '<Esc>',
+            \ "\<Space>": '<Space>', '<Space>': '<Space>',
+            \ "\<Left>": '<Left>', '<Left>': '<Left>',
+            \ "\<Right>": '<Right>', '<Right>': '<Right>',
+            \ "\<Up>": '<Up>', '<Up>': '<Up>',
+            \ "\<Down>": '<Down>', '<Down>': '<Down>',
+            \ "\|": '|', '<Bar>': '|'
+            \ }
+      
+      if has_key(l:key_map, a:key)
+        let l:sanitized_key = l:key_map[a:key]
+      else
+        " For any other unknown special key, use a safe representation
+        let l:sanitized_key = substitute(a:key, '[^\x20-\x7E]', '', 'g')
+      endif
+    endif
+    
+    " Skip empty keys after sanitization
+    if !empty(l:sanitized_key)
+      call add(s:golf_keystrokes, {'key': l:sanitized_key})
+    endif
   endif
 endfunction
 
@@ -442,12 +472,40 @@ function! golf#CalculateScore(keystroke_count) abort
   endif
 endfunction
 
+" Sanitize keylog before submission to ensure all entries are valid UTF-8
+function! golf#SanitizeKeylog(keylog) abort
+  let l:sanitized = []
+  
+  for entry in a:keylog
+    let l:key = get(entry, 'key', '')
+    
+    " Filter out problematic or invalid characters
+    if !empty(l:key)
+      " Double-check that the key is valid ASCII
+      if l:key =~# '^<.*>$' || strlen(substitute(l:key, '[^\x20-\x7E]', '', 'g')) == strlen(l:key)
+        call add(l:sanitized, {'key': l:key})
+      else
+        " If not, convert to a safe string by removing non-ASCII chars
+        let l:safe_key = substitute(l:key, '[^\x20-\x7E]', '', 'g')
+        if !empty(l:safe_key)
+          call add(l:sanitized, {'key': l:safe_key})
+        endif
+      endif
+    endif
+  endfor
+  
+  return l:sanitized
+endfunction
+
 " Save results by submitting to the API; report errors if any
 function! golf#SaveResults(keystroke_count, time_taken, score) abort
+  " Sanitize the keylog before submission
+  let l:sanitized_keylog = golf#SanitizeKeylog(s:golf_keystrokes)
+  
   let l:api_response = golf_api#SubmitSolution(
         \ s:golf_challenge_id,
         \ a:keystroke_count,
-        \ s:golf_keystrokes,
+        \ l:sanitized_keylog,
         \ a:time_taken,
         \ a:score.value
         \ )
