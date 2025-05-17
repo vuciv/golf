@@ -9,7 +9,13 @@ let g:loaded_golf = 1
 
 " Configuration options with defaults
 if !exists('g:golf_data_dir')
-  let g:golf_data_dir = expand('~/.golf')
+  if isdirectory(expand('$XDG_CACHE_HOME'))
+    let g:golf_data_dir = expand('$XDG_CACHE_HOME/golf')
+  elseif isdirectory(expand('~/.cache'))
+    let g:golf_data_dir = expand('~/.cache/golf')
+  else
+    let g:golf_data_dir = expand('~/.golf')
+  endif
 endif
 
 if !exists('g:golf_challenges_dir')
