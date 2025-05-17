@@ -11,6 +11,8 @@ let g:loaded_golf = 1
 if !exists('g:golf_data_dir')
   if isdirectory(expand('$XDG_CACHE_HOME'))
     let g:golf_data_dir = expand('$XDG_CACHE_HOME/golf')
+  elseif isdirectory(expand('~/.cache'))
+    let g:golf_data_dir = expand('~/.cache/golf')
   else
     let g:golf_data_dir = expand('~/.golf')
   endif
